@@ -128,24 +128,33 @@
 - Android 11+ 폰은 최초 1회만 USB로 페어링하면, 이후 설정 → 개발자 옵션 → 무선 디버깅으로 케이블 없이도 같은 방식으로 실행 가능(잠금화면 테스트 시 케이블에 안 걸리적거려서 편함).
 
 ## Phase 0 — 준비
-- [ ] 프로젝트 목표/범위 문서화 (본 TASK.md)
-- [ ] 실기기 USB 디버깅 연결 환경 구성 (아래 "실기기 개발 환경" 참고)
-- [ ] Android Studio + Kotlin 프로젝트 생성 (minSdk 26, targetSdk 최신)
-- [ ] Git 저장소 초기화 및 `.gitignore` 설정
-- [ ] 앱 아이콘/이름 가(假) 확정
-- [ ] KANJIDIC2 / JMdict / Tatoeba 라이선스 및 사용 조건 확인
-- [ ] `content_item` / `quiz_log` DB 스키마 설계 (난이도 필드 포함)
-- [ ] 알림 노출 + 액션 버튼 응답 방식 실기기 검증 (잠금화면에서 OX 버튼 클릭이 실제로 동작하는지)
+- [x] 프로젝트 목표/범위 문서화 (본 TASK.md)
+- [ ] 실기기 USB 디버깅 연결 환경 구성 (아래 "실기기 개발 환경" 참고) — **사용자 작업 필요**(물리 기기에서 개발자 옵션 활성화 + USB 연결)
+- [x] Android Studio + Kotlin 프로젝트 생성 (minSdk 26, targetSdk 34) — `app/build.gradle.kts`, Compose+Room+WorkManager+DataStore 의존성까지 추가됨
+- [x] Git 저장소 초기화 및 `.gitignore` 설정
+- [x] 앱 아이콘/이름 가(假) 확정 — 앱 이름 "NiBen", 기본 launcher 아이콘 적용
+- [x] KANJIDIC2 / JMdict / Tatoeba 라이선스 및 사용 조건 확인 — 아래 "콘텐츠 라이선스 확인 결과" 참고, 모두 사용 가능(출처 표기 조건부)
+- [x] `content_item` / `quiz_log` DB 스키마 설계 (난이도 필드 포함) — `app/src/main/java/com/niben/app/data/`에 Room Entity(`ContentItem`, `QuizLog`)·DAO(`ContentDao`, `QuizLogDao`)·`NibenDatabase` 구현, `assembleDebug` 빌드 성공 확인, 스키마 export를 `app/schemas/`에 설정
+- [ ] 알림 노출 + 액션 버튼 응답 방식 실기기 검증 (잠금화면에서 OX 버튼 클릭이 실제로 동작하는지) — 검증용 최소 프로토타입 코드는 구현 완료(`com.niben.app.notification` 패키지: `QuizNotifier`, `QuizActionReceiver`, MainActivity의 "잠금화면 OX 퀴즈 테스트 알림 보내기" 버튼). **실기기에서 직접 눌러서 확인하는 것은 사용자 작업 필요**(에뮬레이터는 잠금화면 동작을 재현 못 함)
+
+### 콘텐츠 라이선스 확인 결과
+| 데이터셋 | 라이선스 | 사용 조건 |
+|---|---|---|
+| [KANJIDIC2](https://www.edrdg.org/edrdg/licence.html) | CC BY-SA 4.0 (저작권자: EDRDG) | 소프트웨어/서버 등에 출처 명시 필요. 수정본 배포 시에도 동일 라이선스(SA) 유지 |
+| [JMdict](https://www.edrdg.org/edrdg/licence.html) | CC BY-SA 4.0 (저작권자: EDRDG) | 상당량 발췌 사용 시 문서/공지/웹사이트 등에 출처 명시. 앱 패키징상 라이선스 파일 포함이 어려우면(iOS 앱 등) 링크 제공으로 대체 가능 → NiBen도 앱 내 "정보/라이선스" 화면에 출처 링크만 넣으면 충분 |
+| [Tatoeba](https://tatoeba.org/en/terms_of_use) | 문장별 상이 — 기본은 CC BY 2.0 FR, 일부는 CC0 | 문장 단위로 라이선스가 붙어 있으므로 예문 반입 시 각 문장의 라이선스/저자 정보도 함께 저장해 출처 표기 의무를 지킬 것(`content_item.source` 필드에 기록) — 오디오는 라이선스가 별도이므로 사용 안 함 |
+
+→ 셋 다 개인용 오프라인 앱에서 사용 가능. 다만 CC BY-SA/CC BY 계열이라 **앱 내 "정보" 화면에 출처·라이선스 문구를 넣는 작업이 필요**(Phase 3 콘텐츠 반입 시 함께 처리, TASK.md에 기록해 둠).
 
 ## Phase 1 — MVP (OX 퀴즈로 잠금화면 학습)
-- [ ] 히라가나/가타가나 전체 테이블 하드코딩
-- [ ] 기초 단어 30~50개 수기 JSON 작성 (품사/뜻/레벨 포함)
-- [ ] Room DB 구성 및 초기 데이터 시딩 (`content_item`, `quiz_log`)
-- [ ] 알림 채널 생성 (낮은 우선순위, 무음)
-- [ ] OX 퀴즈 알림 표시 구현 (문제 노출 + O/X 액션 버튼)
-- [ ] `BroadcastReceiver`로 액션 클릭 처리 → 정답 판정 → `quiz_log` 기록 → 알림 텍스트 갱신
-- [ ] `POST_NOTIFICATIONS` 런타임 권한 요청 플로우 (Android 13+)
-- [ ] 잠금화면에서 실제로 퀴즈 응답이 되는지 실기기 테스트
+- [x] 히라가나/가타가나 전체 테이블 하드코딩 — `data/KanaTable.kt`, 청음46+탁음20+반탁음5+요음33=104쌍을 히라가나/가타카나 양쪽 `ContentItem`으로 생성(총 208개)
+- [x] 기초 단어 30~50개 수기 JSON 작성 (품사/뜻/레벨 포함) — `assets/vocab_seed.json`, N5 기초 단어 42개(레벨 1)
+- [x] Room DB 구성 및 초기 데이터 시딩 (`content_item`, `quiz_log`) — `data/ContentSeeder.kt`가 앱 최초 실행 시(`NibenApplication.onCreate`) 가나 표 + 단어 JSON을 `content_item`에 삽입(이미 데이터가 있으면 스킵)
+- [x] 알림 채널 생성 (낮은 우선순위, 무음) — `notification/QuizNotifier.createChannel` (Phase 0에서 구현, 유지)
+- [x] OX 퀴즈 알림 표시 구현 (문제 노출 + O/X 액션 버튼) — `quiz/QuizGenerator.generateOx`가 DB에서 무작위 문항을 뽑아 정답/오답 쌍을 만들고, `QuizNotifier.showNextQuiz`가 실제 콘텐츠로 알림 표시(기존 하드코딩 테스트 문제 대체)
+- [x] `BroadcastReceiver`로 액션 클릭 처리 → 정답 판정 → `quiz_log` 기록 → 알림 텍스트 갱신 — `QuizActionReceiver`가 `goAsync()`로 코루틴에서 `QuizLogDao.insert()` 호출해 실제 DB에 기록, 알림 텍스트도 정답/오답으로 갱신
+- [x] `POST_NOTIFICATIONS` 런타임 권한 요청 플로우 (Android 13+) — `MainActivity`가 앱 실행 시 `LaunchedEffect`로 자동 권한 요청(거부해도 앱은 계속 사용 가능)
+- [ ] 잠금화면에서 실제로 퀴즈 응답이 되는지 실기기 테스트 — **사용자 작업 필요**(물리 기기에서 화면 잠근 뒤 알림의 O/X 버튼을 눌러 알림 텍스트가 갱신되는지, 정답 기록이 쌓이는지 확인)
 
 ## Phase 2 — 자동 갱신 + 앱 내 퀴즈 화면
 - [ ] WorkManager로 주기적 문제 교체 작업 구현 (예: N시간마다)
@@ -189,3 +198,6 @@
 ## 진행 상황 기록
 - 2026-08-08: 기획서 초안 작성. 구현 방식(상시 알림) 및 기술스택 확정.
 - 2026-08-08: 퀴즈 기반 학습 구조로 개편, 난이도 설정 확장성 반영, 콘텐츠(히라가나/가타가나/한자/단어/문장) 확보 방법 명시.
+- 2026-08-11: Android Studio 프로젝트 뼈대 생성(`feat: build gradlew` 커밋). `com.niben.app` 패키지, minSdk 26/targetSdk 34, Compose(Material3) + Room + WorkManager + DataStore 의존성 세팅 완료. `MainActivity`는 아직 "こんにちは" placeholder 화면만 있음(퀴즈 로직·DB 엔티티·알림·권한 플로우 전부 미구현). Phase 1 착수 전 단계.
+- 2026-08-19: Phase 0 나머지 항목 진행. KANJIDIC2/JMdict/Tatoeba 라이선스 확인(모두 사용 가능, 출처 표기 조건). `content_item`/`quiz_log` Room 스키마(Entity+DAO+Database) 구현 및 빌드 검증. 잠금화면 알림 OX 액션 응답 검증용 최소 프로토타입(`QuizNotifier`/`QuizActionReceiver` + MainActivity 테스트 버튼) 구현, `assembleDebug` 빌드 성공 확인. 로컬 `local.properties`의 `sdk.dir`을 현재 PC 경로로 수정. 남은 두 항목(실기기 USB 연결, 잠금화면 실기기 검증)은 물리 기기가 있어야 하는 사용자 작업.
+- 2026-08-21: Phase 1 진행. 히라가나/가타카나 전체 104쌍(청음+탁음+반탁음+요음) 하드코딩(`data/KanaTable.kt`), N5 기초 단어 42개 JSON 작성(`assets/vocab_seed.json`). `ContentSeeder`로 앱 최초 실행 시 Room에 초기 데이터 시딩(`NibenApplication` 신설). `QuizGenerator`로 DB 기반 무작위 OX 문제 생성(정답/오답 쌍을 다른 항목과 섞어 오답 보기도 만듦) 구현, `QuizNotifier`/`QuizActionReceiver`를 하드코딩 테스트 문제 대신 실제 콘텐츠와 연결하고 응답 시 `quiz_log`에 실제로 기록되도록 변경. `POST_NOTIFICATIONS` 권한을 앱 실행 시 자동 요청하도록 `MainActivity` 수정. `assembleDebug` 빌드 성공 확인. 남은 항목(잠금화면 실기기 검증)은 물리 기기 사용자 작업.
