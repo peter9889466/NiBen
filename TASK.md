@@ -157,12 +157,12 @@
 - [ ] 잠금화면에서 실제로 퀴즈 응답이 되는지 실기기 테스트 — **사용자 작업 필요**(물리 기기에서 화면 잠근 뒤 알림의 O/X 버튼을 눌러 알림 텍스트가 갱신되는지, 정답 기록이 쌓이는지 확인)
 
 ## Phase 2 — 자동 갱신 + 앱 내 퀴즈 화면
-- [ ] WorkManager로 주기적 문제 교체 작업 구현 (예: N시간마다)
-- [ ] 문제 출제 로직 (순차/랜덤, 최근 출제 항목 제외)
-- [ ] 기기 재부팅 후에도 스케줄 유지 (`BOOT_COMPLETED` 대응)
-- [ ] 앱 내 퀴즈 화면 구현: 3지선다/4지선다 (알림 탭 시 진입)
-- [ ] 결과 화면 (정답/오답 즉시 피드백)
-- [ ] 배터리 소모 확인 (개발자 옵션의 배터리 사용량 점검)
+- [x] WorkManager로 주기적 문제 교체 작업 구현 (예: N시간마다) — `work/QuizRefreshWorker`(`CoroutineWorker`)가 3시간마다 실행되어 65% 확률로 OX 알림, 35% 확률로 3/4지선다 안내 알림을 새로 띄움. `work/WorkScheduler.scheduleQuizRefresh`를 `NibenApplication.onCreate`에서 `ExistingPeriodicWorkPolicy.KEEP`으로 등록
+- [x] 문제 출제 로직 (순차/랜덤, 최근 출제 항목 제외) — `data/RecentItemsStore`(DataStore)가 최근 출제된 항목 id 최대 15개를 보관, `ContentDao.getRandomItemExcludingIds`로 무작위 선택 시 제외. OX/선택형 생성 모두 이 목록을 사용하도록 `QuizGenerator` 수정(별도 "순차" 모드는 무작위+최근제외로 충분히 대체된다고 판단해 만들지 않음)
+- [x] 기기 재부팅 후에도 스케줄 유지 (`BOOT_COMPLETED` 대응) — WorkManager 라이브러리 자체에 병합되는 `RescheduleReceiver`(`BOOT_COMPLETED` 수신)가 예약된 주기 작업을 자동 재등록하므로 앱에서 별도 리시버를 만들 필요 없음. 앱 프로세스가 뜰 때마다(`NibenApplication.onCreate`) `KEEP` 정책으로 재호출해도 중복 생성되지 않아 보강됨
+- [x] 앱 내 퀴즈 화면 구현: 3지선다/4지선다 (알림 탭 시 진입) — `ui/QuizScreen.kt` 신설. `QuizGenerator.generateMultipleChoice`가 같은 카테고리에서 오답 보기를 뽑아 3/4지선다 문제 생성. `QuizNotifier.showMultipleChoicePrompt`가 액션 버튼 없이 `contentIntent`만 있는 알림을 띄우고, 탭하면 `MainActivity`가 인텐트 extra(`EXTRA_OPEN_QUIZ`)를 읽어 `QuizScreen`으로 진입(`launchMode="singleTop"` + `onNewIntent`로 앱이 이미 떠 있어도 처리)
+- [x] 결과 화면 (정답/오답 즉시 피드백) — 별도 화면 대신 `QuizScreen` 내에서 선택 즉시 정답 보기는 초록, 잘못 고른 보기는 빨강으로 표시하고 "정답입니다/오답입니다" 텍스트 노출(디자인 방향의 "애니메이션·이미지 배제, 색상 피드백만" 원칙을 그대로 따름), `quiz_log`에도 기록
+- [ ] 배터리 소모 확인 (개발자 옵션의 배터리 사용량 점검) — **사용자 작업 필요**(실기기에서 며칠 사용 후 설정 → 배터리 사용량에서 NiBen 확인)
 
 ## Phase 3 — 콘텐츠 확장
 - [ ] KANJIDIC2 → JSON 변환 스크립트 작성, JLPT N5~N1 한자 반영
@@ -201,3 +201,4 @@
 - 2026-08-11: Android Studio 프로젝트 뼈대 생성(`feat: build gradlew` 커밋). `com.niben.app` 패키지, minSdk 26/targetSdk 34, Compose(Material3) + Room + WorkManager + DataStore 의존성 세팅 완료. `MainActivity`는 아직 "こんにちは" placeholder 화면만 있음(퀴즈 로직·DB 엔티티·알림·권한 플로우 전부 미구현). Phase 1 착수 전 단계.
 - 2026-08-19: Phase 0 나머지 항목 진행. KANJIDIC2/JMdict/Tatoeba 라이선스 확인(모두 사용 가능, 출처 표기 조건). `content_item`/`quiz_log` Room 스키마(Entity+DAO+Database) 구현 및 빌드 검증. 잠금화면 알림 OX 액션 응답 검증용 최소 프로토타입(`QuizNotifier`/`QuizActionReceiver` + MainActivity 테스트 버튼) 구현, `assembleDebug` 빌드 성공 확인. 로컬 `local.properties`의 `sdk.dir`을 현재 PC 경로로 수정. 남은 두 항목(실기기 USB 연결, 잠금화면 실기기 검증)은 물리 기기가 있어야 하는 사용자 작업.
 - 2026-08-21: Phase 1 진행. 히라가나/가타카나 전체 104쌍(청음+탁음+반탁음+요음) 하드코딩(`data/KanaTable.kt`), N5 기초 단어 42개 JSON 작성(`assets/vocab_seed.json`). `ContentSeeder`로 앱 최초 실행 시 Room에 초기 데이터 시딩(`NibenApplication` 신설). `QuizGenerator`로 DB 기반 무작위 OX 문제 생성(정답/오답 쌍을 다른 항목과 섞어 오답 보기도 만듦) 구현, `QuizNotifier`/`QuizActionReceiver`를 하드코딩 테스트 문제 대신 실제 콘텐츠와 연결하고 응답 시 `quiz_log`에 실제로 기록되도록 변경. `POST_NOTIFICATIONS` 권한을 앱 실행 시 자동 요청하도록 `MainActivity` 수정. `assembleDebug` 빌드 성공 확인. 남은 항목(잠금화면 실기기 검증)은 물리 기기 사용자 작업.
+- 2026-08-22: Phase 2 진행. `RecentItemsStore`(DataStore)로 최근 출제 항목 최대 15개를 기억해 `ContentDao.getRandomItemExcludingIds`로 반복 출제를 피하도록 `QuizGenerator`(OX)를 수정하고, 같은 카테고리 오답 보기를 뽑아 3/4지선다 문제를 만드는 `generateMultipleChoice` 추가. `work/QuizRefreshWorker` + `work/WorkScheduler`로 3시간마다 자동으로 새 퀴즈 알림을 올리도록 구현(OX 65% / 선택형 35% 확률, `NibenApplication.onCreate`에서 `KEEP` 정책으로 등록 — WorkManager 자체 재부팅 복원 메커니즘 확인). 3/4지선다는 알림을 탭하면 `MainActivity`가 `QuizScreen`(신규, `ui/QuizScreen.kt`)으로 진입해 풀도록 구현, 선택 즉시 정답/오답을 색으로 피드백하고 `quiz_log`에 기록. `assembleDebug` 빌드 성공 확인. 남은 항목(배터리 소모 확인)은 물리 기기에서 며칠 사용 후 확인해야 하는 사용자 작업.

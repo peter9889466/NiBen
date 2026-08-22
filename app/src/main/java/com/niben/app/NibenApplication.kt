@@ -4,6 +4,7 @@ import android.app.Application
 import com.niben.app.data.ContentSeeder
 import com.niben.app.data.NibenDatabase
 import com.niben.app.notification.QuizNotifier
+import com.niben.app.work.WorkScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,6 +16,7 @@ class NibenApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         QuizNotifier.createChannel(this)
+        WorkScheduler.scheduleQuizRefresh(this)
         val db = NibenDatabase.getInstance(this)
         applicationScope.launch {
             ContentSeeder.seedIfEmpty(this@NibenApplication, db.contentDao())
