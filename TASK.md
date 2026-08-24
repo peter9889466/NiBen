@@ -144,7 +144,7 @@
 | [JMdict](https://www.edrdg.org/edrdg/licence.html) | CC BY-SA 4.0 (저작권자: EDRDG) | 상당량 발췌 사용 시 문서/공지/웹사이트 등에 출처 명시. 앱 패키징상 라이선스 파일 포함이 어려우면(iOS 앱 등) 링크 제공으로 대체 가능 → NiBen도 앱 내 "정보/라이선스" 화면에 출처 링크만 넣으면 충분 |
 | [Tatoeba](https://tatoeba.org/en/terms_of_use) | 문장별 상이 — 기본은 CC BY 2.0 FR, 일부는 CC0 | 문장 단위로 라이선스가 붙어 있으므로 예문 반입 시 각 문장의 라이선스/저자 정보도 함께 저장해 출처 표기 의무를 지킬 것(`content_item.source` 필드에 기록) — 오디오는 라이선스가 별도이므로 사용 안 함 |
 
-→ 셋 다 개인용 오프라인 앱에서 사용 가능. 다만 CC BY-SA/CC BY 계열이라 **앱 내 "정보" 화면에 출처·라이선스 문구를 넣는 작업이 필요**(Phase 3 콘텐츠 반입 시 함께 처리, TASK.md에 기록해 둠).
+→ 셋 다 개인용 오프라인 앱에서 사용 가능. 다만 CC BY-SA/CC BY 계열이라 **앱 내 "정보" 화면에 출처·라이선스 문구를 넣는 작업이 필요**(대량 반입 시 함께 처리). ※ Phase 3에서 실제로는 이 데이터셋들을 사용하지 않기로 방향 전환함(사유는 Phase 3 섹션 참고) — 현재는 출처 표기 의무 없음.
 
 ## Phase 1 — MVP (OX 퀴즈로 잠금화면 학습)
 - [x] 히라가나/가타가나 전체 테이블 하드코딩 — `data/KanaTable.kt`, 청음46+탁음20+반탁음5+요음33=104쌍을 히라가나/가타카나 양쪽 `ContentItem`으로 생성(총 208개)
@@ -165,10 +165,21 @@
 - [ ] 배터리 소모 확인 (개발자 옵션의 배터리 사용량 점검) — **사용자 작업 필요**(실기기에서 며칠 사용 후 설정 → 배터리 사용량에서 NiBen 확인)
 
 ## Phase 3 — 콘텐츠 확장
-- [ ] KANJIDIC2 → JSON 변환 스크립트 작성, JLPT N5~N1 한자 반영
-- [ ] JMdict → JSON 변환 스크립트 작성, 기초~중급 단어 대량 반영
-- [ ] Tatoeba 예문 필터링 및 반영
-- [ ] 카테고리별(히라가나/가타가나/한자/단어/문장) 문제 출제 비율 조정 기능
+
+> **방향 전환(2026-08-24)**: 당초 계획이던 KANJIDIC2/JMdict/Tatoeba 대량 파싱은 보류. 이유는 아래 "Phase 3 방향 전환 사유" 참고. 대신 Phase 1의 `vocab_seed.json`과 동일한 "수기 작성 → assets JSON 번들" 방식을 한자·문장까지 확장.
+
+- [x] N5 수준 한자 126자 수기 큐레이션(음독/훈독/뜻 포함) → `assets/kanji_seed.json`
+- [x] 여행/생활 회화 기초 단어 109개 수기 추가(인사·숫자·시간·교통·숙소·식당·쇼핑·길찾기·긴급상황 등) → 기존 `assets/vocab_seed.json`에 병합(총 151개)
+- [x] 여행 회화 문장 151개 수기 작성(인사/공항/교통/숙소/식당/쇼핑/길찾기/긴급상황/스몰토크) → `assets/sentence_seed.json`
+- [x] `ContentSeeder`가 vocab/kanji/sentence 3개 자산을 모두 Room에 시딩하도록 확장(`loadCategoryFromAssets` 공통화)
+- [x] 카테고리별(히라가나/가타가나/한자/단어/문장) 문제 출제 비율 조정 기능 — `data/CategoryRatioStore.kt`(DataStore, 카테고리별 가중치 0~100, 기본값 20)와 `ContentDao.getRandomItemInCategory(ExcludingIds)`로 가중치 기반 카테고리 선택 후 항목을 뽑도록 `QuizGenerator.pickItem` 수정, `ui/CategoryRatioScreen.kt`(±5 스텝퍼)로 MainActivity에서 조절 가능
+
+### Phase 3 방향 전환 사유
+- **JMdict에는 한국어 뜻이 없음**: 영어(및 일부 독일어/프랑스어 등) 대역만 제공되고 한국어 gloss가 없어 `content_item.meaning_ko`를 바로 채울 수 없음. 기계번역을 끼우면 수천 건 품질 검증이 필요해 1인 개발 리소스에 비해 부담이 큼.
+- **KANJIDIC2는 공식 JLPT 급수 필드를 더 이상 제공하지 않음**(2010년 JLPT 개편 이후 폐지). 외부 급수 매핑 데이터를 추가로 붙여야 함.
+- **개인용 오프라인 앱 특성상 과한 파이프라인**: 위 두 문제를 해결하려는 대규모 XML 파싱·필터링·번역 스크립트보다, Phase 1에서 이미 검증된 "수기 작성" 방식이 품질(자연스러운 번역)과 개발 공수, 앱 용량(리소스 최소화 원칙) 모두에서 더 유리하다고 판단.
+- Tatoeba도 같은 이유로 대량 반입 대신 여행 회화 목적에 맞는 문장을 직접 작성하는 방식으로 대체.
+- KANJIDIC2/JMdict/Tatoeba 라이선스 확인 결과(Phase 0)는 향후 대량 반입을 다시 고려할 경우를 위해 문서에 남겨둠(현재는 사용하지 않음).
 
 ## Phase 4 — 난이도 설정 & 적응형 학습
 - [ ] 설정 화면에 난이도 필터 UI 추가 (예: N5만 / N5~N3 등)
@@ -202,3 +213,4 @@
 - 2026-08-19: Phase 0 나머지 항목 진행. KANJIDIC2/JMdict/Tatoeba 라이선스 확인(모두 사용 가능, 출처 표기 조건). `content_item`/`quiz_log` Room 스키마(Entity+DAO+Database) 구현 및 빌드 검증. 잠금화면 알림 OX 액션 응답 검증용 최소 프로토타입(`QuizNotifier`/`QuizActionReceiver` + MainActivity 테스트 버튼) 구현, `assembleDebug` 빌드 성공 확인. 로컬 `local.properties`의 `sdk.dir`을 현재 PC 경로로 수정. 남은 두 항목(실기기 USB 연결, 잠금화면 실기기 검증)은 물리 기기가 있어야 하는 사용자 작업.
 - 2026-08-21: Phase 1 진행. 히라가나/가타카나 전체 104쌍(청음+탁음+반탁음+요음) 하드코딩(`data/KanaTable.kt`), N5 기초 단어 42개 JSON 작성(`assets/vocab_seed.json`). `ContentSeeder`로 앱 최초 실행 시 Room에 초기 데이터 시딩(`NibenApplication` 신설). `QuizGenerator`로 DB 기반 무작위 OX 문제 생성(정답/오답 쌍을 다른 항목과 섞어 오답 보기도 만듦) 구현, `QuizNotifier`/`QuizActionReceiver`를 하드코딩 테스트 문제 대신 실제 콘텐츠와 연결하고 응답 시 `quiz_log`에 실제로 기록되도록 변경. `POST_NOTIFICATIONS` 권한을 앱 실행 시 자동 요청하도록 `MainActivity` 수정. `assembleDebug` 빌드 성공 확인. 남은 항목(잠금화면 실기기 검증)은 물리 기기 사용자 작업.
 - 2026-08-22: Phase 2 진행. `RecentItemsStore`(DataStore)로 최근 출제 항목 최대 15개를 기억해 `ContentDao.getRandomItemExcludingIds`로 반복 출제를 피하도록 `QuizGenerator`(OX)를 수정하고, 같은 카테고리 오답 보기를 뽑아 3/4지선다 문제를 만드는 `generateMultipleChoice` 추가. `work/QuizRefreshWorker` + `work/WorkScheduler`로 3시간마다 자동으로 새 퀴즈 알림을 올리도록 구현(OX 65% / 선택형 35% 확률, `NibenApplication.onCreate`에서 `KEEP` 정책으로 등록 — WorkManager 자체 재부팅 복원 메커니즘 확인). 3/4지선다는 알림을 탭하면 `MainActivity`가 `QuizScreen`(신규, `ui/QuizScreen.kt`)으로 진입해 풀도록 구현, 선택 즉시 정답/오답을 색으로 피드백하고 `quiz_log`에 기록. `assembleDebug` 빌드 성공 확인. 남은 항목(배터리 소모 확인)은 물리 기기에서 며칠 사용 후 확인해야 하는 사용자 작업.
+- 2026-08-24: Phase 3 진행. 당초 KANJIDIC2/JMdict/Tatoeba 대량 파싱 계획을 "수기 큐레이션(Phase 1 vocab_seed.json과 동일 방식)"으로 전환(사유는 위 Phase 3 섹션 참고 — JMdict 한국어 gloss 부재, KANJIDIC2 JLPT 급수 필드 폐지, 1인 개발 리소스 대비 파이프라인 과함). N5 한자 126자를 음독/훈독/한글 뜻과 함께 수기 작성(`assets/kanji_seed.json`), 여행·생활 회화 단어 109개를 기존 `vocab_seed.json`에 추가(총 151개), 공항/교통/숙소/식당/쇼핑/길찾기/긴급상황/인사/스몰토크를 아우르는 여행 회화 문장 151개를 신규 작성(`assets/sentence_seed.json`). `ContentSeeder`를 `loadCategoryFromAssets` 공통 함수로 리팩터링해 세 파일 모두 앱 최초 실행 시 Room에 시딩되도록 연결. 카테고리별 출제 비율 조정 기능은 `CategoryRatioStore`(DataStore, 카테고리별 가중치 0~100·기본 20)로 구현하고 `ContentDao`에 카테고리 한정 무작위 조회 쿼리(`getRandomItemInCategory`/`getRandomItemInCategoryExcludingIds`)를 추가, `QuizGenerator.pickItem`이 가중치로 카테고리를 먼저 고른 뒤 항목을 뽑도록 수정(OX·선택형 퀴즈 양쪽 다 반영, 기존 "최근 출제 제외" 로직과 함께 동작). `ui/CategoryRatioScreen.kt`(카테고리별 ±5 스텝퍼 + 기본값 초기화 버튼)를 추가하고 MainActivity에 진입 버튼 연결. `assembleDebug` 빌드 성공 확인.

@@ -31,11 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.niben.app.notification.QuizNotifier
+import com.niben.app.ui.CategoryRatioScreen
 import com.niben.app.ui.QuizScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private var openQuizChoiceCount by mutableStateOf<Int?>(null)
+    private var showCategoryRatioScreen by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +46,16 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val choiceCount = openQuizChoiceCount
-                    if (choiceCount != null) {
-                        QuizScreen(choiceCount = choiceCount, onExit = { openQuizChoiceCount = null })
-                    } else {
-                        HelloNiBen(onOpenMultipleChoiceQuiz = { openQuizChoiceCount = 4 })
+                    when {
+                        choiceCount != null ->
+                            QuizScreen(choiceCount = choiceCount, onExit = { openQuizChoiceCount = null })
+                        showCategoryRatioScreen ->
+                            CategoryRatioScreen(onExit = { showCategoryRatioScreen = false })
+                        else ->
+                            HelloNiBen(
+                                onOpenMultipleChoiceQuiz = { openQuizChoiceCount = 4 },
+                                onOpenCategoryRatio = { showCategoryRatioScreen = true }
+                            )
                     }
                 }
             }
@@ -67,7 +75,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HelloNiBen(onOpenMultipleChoiceQuiz: () -> Unit = {}) {
+fun HelloNiBen(
+    onOpenMultipleChoiceQuiz: () -> Unit = {},
+    onOpenCategoryRatio: () -> Unit = {}
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -102,6 +113,12 @@ fun HelloNiBen(onOpenMultipleChoiceQuiz: () -> Unit = {}) {
             modifier = Modifier.padding(top = 12.dp)
         ) {
             Text("선택형 퀴즈 화면 열기")
+        }
+        Button(
+            onClick = onOpenCategoryRatio,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text("카테고리 비율 설정")
         }
     }
 }

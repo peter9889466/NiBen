@@ -51,7 +51,7 @@ object QuizNotifier {
     suspend fun showNextQuiz(context: Context) {
         val dao = NibenDatabase.getInstance(context).contentDao()
         val excludeIds = RecentItemsStore.getRecentIds(context)
-        val quiz = QuizGenerator.generateOx(dao, excludeIds) ?: return
+        val quiz = QuizGenerator.generateOx(dao, excludeIds, context) ?: return
         RecentItemsStore.recordShown(context, quiz.itemId)
         showQuiz(context, quiz)
     }

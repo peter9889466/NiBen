@@ -1,5 +1,7 @@
 package com.niben.app.quiz
 
+import android.content.Context
+import com.niben.app.data.CategoryRatioStore
 import com.niben.app.data.ContentCategory
 import com.niben.app.data.ContentDao
 import com.niben.app.data.QuizType
@@ -20,9 +22,16 @@ data class MultipleChoiceQuiz(
 )
 
 object QuizGenerator {
-    /** excludeIds에 담긴 항목(최근 출제분)은 제외하고 무작위 OX 문제를 만든다. */
-    suspend fun generateOx(dao: ContentDao, excludeIds: List<Long> = emptyList()): OxQuiz? {
-        val item = pickItem(dao, excludeIds) ?: return null
+    /**
+     * excludeIds에 담긴 항목(최근 출제분)은 제외하고 무작위 OX 문제를 만든다.
+     * context가 주어지면 CategoryRatioStore에 저장된 카테고리별 출제 비율을 반영한다.
+     */
+    suspend fun generateOx(
+        dao: ContentDao,
+        excludeIds: List<Long> = emptyList(),
+        context: Context? = null
+    ): OxQuiz? {
+        val item = pickItem(dao, excludeIds, context) ?: return null
         val useCorrectPairing = Random.nextBoolean()
         val displayAnswer = if (useCorrectPairing) {
             item.meaningKo
@@ -40,9 +49,10 @@ object QuizGenerator {
     suspend fun generateMultipleChoice(
         dao: ContentDao,
         choiceCount: Int,
-        excludeIds: List<Long> = emptyList()
+        excludeIds: List<Long> = emptyList(),
+        context: Context? = null
     ): MultipleChoiceQuiz? {
-        val item = pickItem(dao, excludeIds) ?: return null
+        val item = pickItem(dao, excludeIds, context) ?: return null
         val distractors = dao.getRandomItemsExcept(item.category, item.id, choiceCount - 1)
             .map { it.meaningKo }
             .distinct()
@@ -63,7 +73,27 @@ object QuizGenerator {
         )
     }
 
-    private suspend fun pickItem(dao: ContentDao, excludeIds: List<Long>) =
+    /**
+     * context가 주어지면 CategoryRatioStore의 카테고리별 가중치로 카테고리를 먼저 고른 뒤
+     * 그 안에서 무작위 항목을 뽑는다(그 카테고리에 항목이 없으면 전체에서 무작위로 대체).
+     * context가 없으면 기존처럼 전체 카테고리에서 균등하게 무작위로 뽑는다.
+     */
+    private suspend fun pickItem(dao: ContentDao, excludeIds: List<Long>, context: Context?) =
+        if (context == null) {
+            pickAnyCategory(dao, excludeIds)
+        } else {
+            val category = CategoryRatioStore.pickWeightedCategory(CategoryRatioStore.getWeights(context))
+            val fromCategory = category?.let {
+                if (excludeIds.isEmpty()) {
+                    dao.getRandomItemInCategory(it)
+                } else {
+                    dao.getRandomItemInCategoryExcludingIds(it, excludeIds)
+                }
+            }
+            fromCategory ?: pickAnyCategory(dao, excludeIds)
+        }
+
+    private suspend fun pickAnyCategory(dao: ContentDao, excludeIds: List<Long>) =
         if (excludeIds.isEmpty()) {
             dao.getRandomItem()
         } else {

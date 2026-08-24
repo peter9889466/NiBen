@@ -54,7 +54,7 @@ fun QuizScreen(choiceCount: Int, onExit: () -> Unit) {
         loading = true
         selectedIndex = -1
         val excludeIds = RecentItemsStore.getRecentIds(context)
-        val next = QuizGenerator.generateMultipleChoice(dao, choiceCount, excludeIds)
+        val next = QuizGenerator.generateMultipleChoice(dao, choiceCount, excludeIds, context)
         if (next != null) {
             RecentItemsStore.recordShown(context, next.itemId)
         }
