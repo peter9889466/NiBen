@@ -1,0 +1,743 @@
+{
+  "version": "2.17",
+  "variables": {
+    "color.primary": { "type": "color", "value": "#4F46E5" },
+    "color.primaryLight": { "type": "color", "value": "#EEF2FF" },
+    "color.surface": { "type": "color", "value": "#F8FAFC" },
+    "color.background": { "type": "color", "value": "#FFFFFF" },
+    "color.border": { "type": "color", "value": "#E5E7EB" },
+    "color.textPrimary": { "type": "color", "value": "#111827" },
+    "color.textSecondary": { "type": "color", "value": "#6B7280" },
+    "color.correct": { "type": "color", "value": "#16A34A" },
+    "color.correctBg": { "type": "color", "value": "#DCFCE7" },
+    "color.wrong": { "type": "color", "value": "#DC2626" },
+    "color.wrongBg": { "type": "color", "value": "#FEE2E2" }
+  },
+  "children": [
+    {
+      "id": "caption-notif-ox",
+      "type": "text",
+      "name": "Caption - Notification OX",
+      "x": 0,
+      "y": 10,
+      "content": "잠금화면 알림 - OX 퀴즈 (액션 버튼으로 즉시 채점)",
+      "fontSize": 12,
+      "fontWeight": "bold",
+      "fill": "$color.textSecondary"
+    },
+    {
+      "id": "notif-ox",
+      "type": "frame",
+      "name": "Notification - OX Quiz",
+      "x": 0,
+      "y": 40,
+      "width": 360,
+      "height": 190,
+      "layout": "vertical",
+      "gap": 10,
+      "padding": 16,
+      "cornerRadius": 16,
+      "fill": "$color.background",
+      "stroke": "$color.border",
+      "strokeWidth": 1,
+      "effect": [
+        { "type": "shadow", "shadowType": "outer", "offset": { "x": 0, "y": 2 }, "blur": 8, "color": "#00000022" }
+      ],
+      "children": [
+        {
+          "id": "notif-ox-header",
+          "type": "text",
+          "content": "NiBen · 알림",
+          "fontSize": 12,
+          "fill": "$color.textSecondary"
+        },
+        {
+          "id": "notif-ox-main",
+          "type": "text",
+          "content": "あ",
+          "fontSize": 40,
+          "fontWeight": "bold",
+          "fill": "$color.textPrimary",
+          "textAlign": "center",
+          "width": "fill_container"
+        },
+        {
+          "id": "notif-ox-sub",
+          "type": "text",
+          "content": "히라가나 · 이 글자의 발음은? \"a\"",
+          "fontSize": 13,
+          "fill": "$color.textSecondary",
+          "textAlign": "center",
+          "width": "fill_container"
+        },
+        {
+          "id": "notif-ox-divider",
+          "type": "rectangle",
+          "width": "fill_container",
+          "height": 1,
+          "fill": "$color.border"
+        },
+        {
+          "id": "notif-ox-actions",
+          "type": "frame",
+          "layout": "horizontal",
+          "justifyContent": "space_around",
+          "width": "fill_container",
+          "children": [
+            {
+              "id": "notif-ox-action-o",
+              "type": "frame",
+              "padding": [6, 20],
+              "alignItems": "center",
+              "children": [
+                { "id": "notif-ox-action-o-text", "type": "text", "content": "O", "fontSize": 14, "fontWeight": "bold", "fill": "$color.primary" }
+              ]
+            },
+            {
+              "id": "notif-ox-action-x",
+              "type": "frame",
+              "padding": [6, 20],
+              "alignItems": "center",
+              "children": [
+                { "id": "notif-ox-action-x-text", "type": "text", "content": "X", "fontSize": 14, "fontWeight": "bold", "fill": "$color.primary" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "caption-notif-mc",
+      "type": "text",
+      "name": "Caption - Notification tap-to-open",
+      "x": 420,
+      "y": 10,
+      "content": "잠금화면 알림 - 3/4지선다 (탭하면 앱의 퀴즈 화면으로 진입)",
+      "fontSize": 12,
+      "fontWeight": "bold",
+      "fill": "$color.textSecondary"
+    },
+    {
+      "id": "notif-mc",
+      "type": "frame",
+      "name": "Notification - Tap to Open",
+      "x": 420,
+      "y": 40,
+      "width": 360,
+      "height": 150,
+      "layout": "vertical",
+      "gap": 8,
+      "padding": 16,
+      "cornerRadius": 16,
+      "fill": "$color.background",
+      "stroke": "$color.border",
+      "strokeWidth": 1,
+      "effect": [
+        { "type": "shadow", "shadowType": "outer", "offset": { "x": 0, "y": 2 }, "blur": 8, "color": "#00000022" }
+      ],
+      "children": [
+        { "id": "notif-mc-header", "type": "text", "content": "NiBen · 알림", "fontSize": 12, "fill": "$color.textSecondary" },
+        { "id": "notif-mc-main", "type": "text", "content": "食べる", "fontSize": 28, "fontWeight": "bold", "fill": "$color.textPrimary", "textAlign": "center", "width": "fill_container" },
+        { "id": "notif-mc-sub", "type": "text", "content": "단어 퀴즈 · 탭하여 4지선다 풀기", "fontSize": 13, "fill": "$color.textSecondary", "textAlign": "center", "width": "fill_container" },
+        { "id": "notif-mc-hint", "type": "text", "content": "→ 탭하면 앱에서 퀴즈 화면이 열립니다", "fontSize": 11, "fill": "$color.textSecondary", "textAlign": "center", "width": "fill_container" }
+      ]
+    },
+
+    {
+      "id": "caption-main",
+      "type": "text",
+      "name": "Caption - Main Screen",
+      "x": 0,
+      "y": 290,
+      "content": "메인 화면 (MainActivity)",
+      "fontSize": 12,
+      "fontWeight": "bold",
+      "fill": "$color.textSecondary"
+    },
+    {
+      "id": "screen-main",
+      "type": "frame",
+      "name": "Screen - Main",
+      "x": 0,
+      "y": 320,
+      "width": 320,
+      "height": 640,
+      "layout": "vertical",
+      "clip": true,
+      "cornerRadius": 24,
+      "fill": "$color.background",
+      "stroke": "$color.border",
+      "strokeWidth": 1,
+      "children": [
+        {
+          "id": "main-topbar",
+          "type": "frame",
+          "layout": "horizontal",
+          "alignItems": "center",
+          "width": "fill_container",
+          "height": 56,
+          "padding": [0, 16],
+          "fill": "$color.primary",
+          "children": [
+            { "id": "main-topbar-title", "type": "text", "content": "NiBen", "fontSize": 18, "fontWeight": "bold", "fill": "#FFFFFF" }
+          ]
+        },
+        {
+          "id": "main-content",
+          "type": "frame",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 20,
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$color.surface",
+          "children": [
+            { "id": "main-title", "type": "text", "content": "오늘의 학습", "fontSize": 20, "fontWeight": "bold", "fill": "$color.textPrimary" },
+            { "id": "main-desc", "type": "text", "content": "잠금화면에서 매일 새로운 일본어 문제를 풀어보세요.", "fontSize": 13, "fill": "$color.textSecondary" },
+            {
+              "id": "main-permission-card",
+              "type": "frame",
+              "layout": "vertical",
+              "gap": 4,
+              "padding": 16,
+              "cornerRadius": 12,
+              "fill": "$color.background",
+              "stroke": "$color.border",
+              "strokeWidth": 1,
+              "width": "fill_container",
+              "children": [
+                { "id": "main-permission-label", "type": "text", "content": "알림 권한 (POST_NOTIFICATIONS)", "fontSize": 13, "fontWeight": "bold", "fill": "$color.textPrimary" },
+                { "id": "main-permission-value", "type": "text", "content": "허용됨 ✓", "fontSize": 13, "fill": "$color.correct" }
+              ]
+            },
+            {
+              "id": "main-btn-test-notif",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "padding": [12, 16],
+              "cornerRadius": 10,
+              "fill": "$color.primary",
+              "width": "fill_container",
+              "children": [
+                { "id": "main-btn-test-notif-text", "type": "text", "content": "잠금화면 OX 퀴즈 테스트 알림 보내기", "fontSize": 14, "fontWeight": "bold", "fill": "#FFFFFF", "textAlign": "center" }
+              ]
+            },
+            {
+              "id": "main-btn-ratio",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "padding": [12, 16],
+              "cornerRadius": 10,
+              "fill": "$color.background",
+              "stroke": "$color.primary",
+              "strokeWidth": 1.5,
+              "width": "fill_container",
+              "children": [
+                { "id": "main-btn-ratio-text", "type": "text", "content": "카테고리별 출제 비율 설정", "fontSize": 14, "fontWeight": "bold", "fill": "$color.primary", "textAlign": "center" }
+              ]
+            },
+            {
+              "id": "main-stats-row",
+              "type": "frame",
+              "layout": "horizontal",
+              "gap": 12,
+              "width": "fill_container",
+              "children": [
+                {
+                  "id": "main-stat-total",
+                  "type": "frame",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 14,
+                  "cornerRadius": 12,
+                  "fill": "$color.background",
+                  "stroke": "$color.border",
+                  "strokeWidth": 1,
+                  "width": "fill_container",
+                  "children": [
+                    { "id": "main-stat-total-label", "type": "text", "content": "누적 문제", "fontSize": 12, "fill": "$color.textSecondary" },
+                    { "id": "main-stat-total-value", "type": "text", "content": "128", "fontSize": 20, "fontWeight": "bold", "fill": "$color.textPrimary" }
+                  ]
+                },
+                {
+                  "id": "main-stat-rate",
+                  "type": "frame",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "padding": 14,
+                  "cornerRadius": 12,
+                  "fill": "$color.background",
+                  "stroke": "$color.border",
+                  "strokeWidth": 1,
+                  "width": "fill_container",
+                  "children": [
+                    { "id": "main-stat-rate-label", "type": "text", "content": "정답률", "fontSize": 12, "fill": "$color.textSecondary" },
+                    { "id": "main-stat-rate-value", "type": "text", "content": "76%", "fontSize": 20, "fontWeight": "bold", "fill": "$color.textPrimary" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "caption-quiz",
+      "type": "text",
+      "name": "Caption - Quiz Screen",
+      "x": 380,
+      "y": 290,
+      "content": "퀴즈 화면 (QuizScreen) - 선택 즉시 색상 피드백",
+      "fontSize": 12,
+      "fontWeight": "bold",
+      "fill": "$color.textSecondary"
+    },
+    {
+      "id": "screen-quiz",
+      "type": "frame",
+      "name": "Screen - Quiz",
+      "x": 380,
+      "y": 320,
+      "width": 320,
+      "height": 640,
+      "layout": "vertical",
+      "clip": true,
+      "cornerRadius": 24,
+      "fill": "$color.background",
+      "stroke": "$color.border",
+      "strokeWidth": 1,
+      "children": [
+        {
+          "id": "quiz-topbar",
+          "type": "frame",
+          "layout": "horizontal",
+          "alignItems": "center",
+          "width": "fill_container",
+          "height": 56,
+          "padding": [0, 16],
+          "fill": "$color.primary",
+          "children": [
+            { "id": "quiz-topbar-title", "type": "text", "content": "퀴즈", "fontSize": 18, "fontWeight": "bold", "fill": "#FFFFFF" }
+          ]
+        },
+        {
+          "id": "quiz-content",
+          "type": "frame",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 20,
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$color.surface",
+          "children": [
+            { "id": "quiz-progress", "type": "text", "content": "3 / 10", "fontSize": 12, "fill": "$color.textSecondary" },
+            {
+              "id": "quiz-question-card",
+              "type": "frame",
+              "layout": "vertical",
+              "gap": 6,
+              "alignItems": "center",
+              "justifyContent": "center",
+              "padding": 24,
+              "cornerRadius": 16,
+              "fill": "$color.background",
+              "stroke": "$color.border",
+              "strokeWidth": 1,
+              "width": "fill_container",
+              "children": [
+                { "id": "quiz-question-main", "type": "text", "content": "食べる", "fontSize": 36, "fontWeight": "bold", "fill": "$color.textPrimary" },
+                { "id": "quiz-question-reading", "type": "text", "content": "たべる", "fontSize": 16, "fill": "$color.textSecondary" }
+              ]
+            },
+            {
+              "id": "quiz-options",
+              "type": "frame",
+              "layout": "vertical",
+              "gap": 10,
+              "width": "fill_container",
+              "children": [
+                {
+                  "id": "quiz-option-correct",
+                  "type": "frame",
+                  "padding": [12, 16],
+                  "cornerRadius": 10,
+                  "fill": "$color.correctBg",
+                  "stroke": "$color.correct",
+                  "strokeWidth": 1.5,
+                  "width": "fill_container",
+                  "children": [
+                    { "id": "quiz-option-correct-text", "type": "text", "content": "먹다  ✓ 정답", "fontSize": 14, "fontWeight": "bold", "fill": "$color.correct" }
+                  ]
+                },
+                {
+                  "id": "quiz-option-wrong",
+                  "type": "frame",
+                  "padding": [12, 16],
+                  "cornerRadius": 10,
+                  "fill": "$color.wrongBg",
+                  "stroke": "$color.wrong",
+                  "strokeWidth": 1.5,
+                  "width": "fill_container",
+                  "children": [
+                    { "id": "quiz-option-wrong-text", "type": "text", "content": "마시다  ✕ 선택함", "fontSize": 14, "fontWeight": "bold", "fill": "$color.wrong" }
+                  ]
+                },
+                {
+                  "id": "quiz-option-neutral-1",
+                  "type": "frame",
+                  "padding": [12, 16],
+                  "cornerRadius": 10,
+                  "fill": "$color.background",
+                  "stroke": "$color.border",
+                  "strokeWidth": 1,
+                  "width": "fill_container",
+                  "children": [
+                    { "id": "quiz-option-neutral-1-text", "type": "text", "content": "자다", "fontSize": 14, "fill": "$color.textPrimary" }
+                  ]
+                },
+                {
+                  "id": "quiz-option-neutral-2",
+                  "type": "frame",
+                  "padding": [12, 16],
+                  "cornerRadius": 10,
+                  "fill": "$color.background",
+                  "stroke": "$color.border",
+                  "strokeWidth": 1,
+                  "width": "fill_container",
+                  "children": [
+                    { "id": "quiz-option-neutral-2-text", "type": "text", "content": "가다", "fontSize": 14, "fill": "$color.textPrimary" }
+                  ]
+                }
+              ]
+            },
+            { "id": "quiz-feedback", "type": "text", "content": "오답입니다", "fontSize": 15, "fontWeight": "bold", "fill": "$color.wrong", "textAlign": "center", "width": "fill_container" }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "caption-ratio",
+      "type": "text",
+      "name": "Caption - Category Ratio Screen",
+      "x": 760,
+      "y": 290,
+      "content": "카테고리별 출제 비율 설정 화면 (CategoryRatioScreen)",
+      "fontSize": 12,
+      "fontWeight": "bold",
+      "fill": "$color.textSecondary"
+    },
+    {
+      "id": "screen-ratio",
+      "type": "frame",
+      "name": "Screen - Category Ratio",
+      "x": 760,
+      "y": 320,
+      "width": 320,
+      "height": 640,
+      "layout": "vertical",
+      "clip": true,
+      "cornerRadius": 24,
+      "fill": "$color.background",
+      "stroke": "$color.border",
+      "strokeWidth": 1,
+      "children": [
+        {
+          "id": "ratio-topbar",
+          "type": "frame",
+          "layout": "horizontal",
+          "alignItems": "center",
+          "width": "fill_container",
+          "height": 56,
+          "padding": [0, 16],
+          "fill": "$color.primary",
+          "children": [
+            { "id": "ratio-topbar-title", "type": "text", "content": "카테고리 비율 설정", "fontSize": 16, "fontWeight": "bold", "fill": "#FFFFFF" }
+          ]
+        },
+        {
+          "id": "ratio-content",
+          "type": "frame",
+          "layout": "vertical",
+          "gap": 6,
+          "padding": 20,
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$color.surface",
+          "children": [
+            { "id": "ratio-desc", "type": "text", "content": "카테고리별 출제 가중치를 조절하세요 (0~100)", "fontSize": 12, "fill": "$color.textSecondary" },
+            {
+              "id": "ratio-row-hiragana",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "width": "fill_container",
+              "padding": [10, 0],
+              "children": [
+                { "id": "ratio-row-hiragana-label", "type": "text", "content": "히라가나", "fontSize": 14, "fill": "$color.textPrimary" },
+                {
+                  "id": "ratio-row-hiragana-stepper",
+                  "type": "frame",
+                  "layout": "horizontal",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "ratio-row-hiragana-minus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-hiragana-minus-text", "type": "text", "content": "-", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    },
+                    { "id": "ratio-row-hiragana-value", "type": "text", "content": "20", "fontSize": 14, "fontWeight": "bold", "fill": "$color.textPrimary", "width": 28, "textAlign": "center" },
+                    {
+                      "id": "ratio-row-hiragana-plus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-hiragana-plus-text", "type": "text", "content": "+", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ratio-row-katakana",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "width": "fill_container",
+              "padding": [10, 0],
+              "children": [
+                { "id": "ratio-row-katakana-label", "type": "text", "content": "가타가나", "fontSize": 14, "fill": "$color.textPrimary" },
+                {
+                  "id": "ratio-row-katakana-stepper",
+                  "type": "frame",
+                  "layout": "horizontal",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "ratio-row-katakana-minus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-katakana-minus-text", "type": "text", "content": "-", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    },
+                    { "id": "ratio-row-katakana-value", "type": "text", "content": "20", "fontSize": 14, "fontWeight": "bold", "fill": "$color.textPrimary", "width": 28, "textAlign": "center" },
+                    {
+                      "id": "ratio-row-katakana-plus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-katakana-plus-text", "type": "text", "content": "+", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ratio-row-kanji",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "width": "fill_container",
+              "padding": [10, 0],
+              "children": [
+                { "id": "ratio-row-kanji-label", "type": "text", "content": "한자", "fontSize": 14, "fill": "$color.textPrimary" },
+                {
+                  "id": "ratio-row-kanji-stepper",
+                  "type": "frame",
+                  "layout": "horizontal",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "ratio-row-kanji-minus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-kanji-minus-text", "type": "text", "content": "-", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    },
+                    { "id": "ratio-row-kanji-value", "type": "text", "content": "20", "fontSize": 14, "fontWeight": "bold", "fill": "$color.textPrimary", "width": 28, "textAlign": "center" },
+                    {
+                      "id": "ratio-row-kanji-plus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-kanji-plus-text", "type": "text", "content": "+", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ratio-row-vocab",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "width": "fill_container",
+              "padding": [10, 0],
+              "children": [
+                { "id": "ratio-row-vocab-label", "type": "text", "content": "단어", "fontSize": 14, "fill": "$color.textPrimary" },
+                {
+                  "id": "ratio-row-vocab-stepper",
+                  "type": "frame",
+                  "layout": "horizontal",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "ratio-row-vocab-minus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-vocab-minus-text", "type": "text", "content": "-", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    },
+                    { "id": "ratio-row-vocab-value", "type": "text", "content": "25", "fontSize": 14, "fontWeight": "bold", "fill": "$color.textPrimary", "width": 28, "textAlign": "center" },
+                    {
+                      "id": "ratio-row-vocab-plus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-vocab-plus-text", "type": "text", "content": "+", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ratio-row-sentence",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "width": "fill_container",
+              "padding": [10, 0],
+              "children": [
+                { "id": "ratio-row-sentence-label", "type": "text", "content": "문장", "fontSize": 14, "fill": "$color.textPrimary" },
+                {
+                  "id": "ratio-row-sentence-stepper",
+                  "type": "frame",
+                  "layout": "horizontal",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "ratio-row-sentence-minus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-sentence-minus-text", "type": "text", "content": "-", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    },
+                    { "id": "ratio-row-sentence-value", "type": "text", "content": "15", "fontSize": 14, "fontWeight": "bold", "fill": "$color.textPrimary", "width": 28, "textAlign": "center" },
+                    {
+                      "id": "ratio-row-sentence-plus",
+                      "type": "frame",
+                      "width": 28,
+                      "height": 28,
+                      "cornerRadius": 8,
+                      "fill": "$color.background",
+                      "stroke": "$color.border",
+                      "strokeWidth": 1,
+                      "alignItems": "center",
+                      "justifyContent": "center",
+                      "children": [ { "id": "ratio-row-sentence-plus-text", "type": "text", "content": "+", "fontSize": 16, "fill": "$color.textPrimary" } ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "ratio-divider",
+              "type": "rectangle",
+              "width": "fill_container",
+              "height": 1,
+              "fill": "$color.border"
+            },
+            {
+              "id": "ratio-reset-btn",
+              "type": "frame",
+              "layout": "horizontal",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "padding": [10, 16],
+              "cornerRadius": 10,
+              "fill": "$color.background",
+              "stroke": "$color.primary",
+              "strokeWidth": 1.5,
+              "width": "fill_container",
+              "children": [
+                { "id": "ratio-reset-btn-text", "type": "text", "content": "기본값으로 초기화", "fontSize": 13, "fontWeight": "bold", "fill": "$color.primary", "textAlign": "center" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
