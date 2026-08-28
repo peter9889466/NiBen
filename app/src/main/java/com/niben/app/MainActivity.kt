@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -32,12 +33,16 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.niben.app.notification.QuizNotifier
 import com.niben.app.ui.CategoryRatioScreen
+import com.niben.app.ui.IncorrectNoteScreen
+import com.niben.app.ui.LevelFilterScreen
 import com.niben.app.ui.QuizScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private var openQuizChoiceCount by mutableStateOf<Int?>(null)
     private var showCategoryRatioScreen by mutableStateOf(false)
+    private var showLevelFilterScreen by mutableStateOf(false)
+    private var showIncorrectNoteScreen by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,10 +56,16 @@ class MainActivity : ComponentActivity() {
                             QuizScreen(choiceCount = choiceCount, onExit = { openQuizChoiceCount = null })
                         showCategoryRatioScreen ->
                             CategoryRatioScreen(onExit = { showCategoryRatioScreen = false })
+                        showLevelFilterScreen ->
+                            LevelFilterScreen(onExit = { showLevelFilterScreen = false })
+                        showIncorrectNoteScreen ->
+                            IncorrectNoteScreen(onExit = { showIncorrectNoteScreen = false })
                         else ->
                             HelloNiBen(
                                 onOpenMultipleChoiceQuiz = { openQuizChoiceCount = 4 },
-                                onOpenCategoryRatio = { showCategoryRatioScreen = true }
+                                onOpenCategoryRatio = { showCategoryRatioScreen = true },
+                                onOpenLevelFilter = { showLevelFilterScreen = true },
+                                onOpenIncorrectNote = { showIncorrectNoteScreen = true }
                             )
                     }
                 }
@@ -77,7 +88,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HelloNiBen(
     onOpenMultipleChoiceQuiz: () -> Unit = {},
-    onOpenCategoryRatio: () -> Unit = {}
+    onOpenCategoryRatio: () -> Unit = {},
+    onOpenLevelFilter: () -> Unit = {},
+    onOpenIncorrectNote: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -119,6 +132,18 @@ fun HelloNiBen(
             modifier = Modifier.padding(top = 12.dp)
         ) {
             Text("카테고리 비율 설정")
+        }
+        Button(
+            onClick = onOpenLevelFilter,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text("학습 난이도 설정")
+        }
+        Button(
+            onClick = onOpenIncorrectNote,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text("오답노트 복습")
         }
     }
 }
