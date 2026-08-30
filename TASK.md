@@ -182,11 +182,11 @@
 - KANJIDIC2/JMdict/Tatoeba 라이선스 확인 결과(Phase 0)는 향후 대량 반입을 다시 고려할 경우를 위해 문서에 남겨둠(현재는 사용하지 않음).
 
 ## Phase 4 — 난이도 설정 & 적응형 학습
-- [ ] 설정 화면에 난이도 필터 UI 추가 (예: N5만 / N5~N3 등)
-- [ ] 난이도 선택값을 문제 출제 로직에 반영
-- [ ] `quiz_log` 기반 오답노트 화면 (자주 틀리는 항목 모아보기)
-- [ ] (선택) 정답률 기반 자동 난이도 조정
-- [ ] 간격 반복(SRS) 알고리즘 도입 → 출제 우선순위에 반영
+- [x] 설정 화면에 난이도 필터 UI 추가 (예: N5만 / N5~N3 등) — `ui/LevelFilterScreen.kt` 추가 및 `MainActivity` 연동 완료
+- [x] 난이도 선택값을 문제 출제 로직에 반영 — `LevelFilterStore` 및 `ContentDao.getItemsWithLogStatus`로 쿼리 필터 적용 완료
+- [x] `quiz_log` 기반 오답노트 화면 (자주 틀리는 항목 모아보기) — `ui/IncorrectNoteScreen.kt` 추가 및 `QuizLogDao.getIncorrectItems` 쿼리, 외웠음 삭제 기능 구현 완료
+- [x] (선택) 정답률 기반 자동 난이도 조정 — SRS 가중치 알고리즘을 도입해 누적 오답 횟수 및 정답률 기반 가중치 부여 방식으로 세부 조정 완료
+- [x] 간격 반복(SRS) 알고리즘 도입 → 출제 우선순위에 반영 — `QuizGenerator.pickItem`에 최근 풀이 여부, 오답 경과 시각(2분~24시간), 정답 경과 시각(24시간 이내 감쇠)을 연동한 룰렛 휠 가중 출제 로직 적용 완료
 
 ## Phase 5 — 학습 강화 / 편의 기능
 - [ ] 뜻 입력형 주관식 퀴즈 (앱 내)
@@ -212,5 +212,5 @@
 - 2026-08-11: Android Studio 프로젝트 뼈대 생성(`feat: build gradlew` 커밋). `com.niben.app` 패키지, minSdk 26/targetSdk 34, Compose(Material3) + Room + WorkManager + DataStore 의존성 세팅 완료. `MainActivity`는 아직 "こんにちは" placeholder 화면만 있음(퀴즈 로직·DB 엔티티·알림·권한 플로우 전부 미구현). Phase 1 착수 전 단계.
 - 2026-08-19: Phase 0 나머지 항목 진행. KANJIDIC2/JMdict/Tatoeba 라이선스 확인(모두 사용 가능, 출처 표기 조건). `content_item`/`quiz_log` Room 스키마(Entity+DAO+Database) 구현 및 빌드 검증. 잠금화면 알림 OX 액션 응답 검증용 최소 프로토타입(`QuizNotifier`/`QuizActionReceiver` + MainActivity 테스트 버튼) 구현, `assembleDebug` 빌드 성공 확인. 로컬 `local.properties`의 `sdk.dir`을 현재 PC 경로로 수정. 남은 두 항목(실기기 USB 연결, 잠금화면 실기기 검증)은 물리 기기가 있어야 하는 사용자 작업.
 - 2026-08-21: Phase 1 진행. 히라가나/가타카나 전체 104쌍(청음+탁음+반탁음+요음) 하드코딩(`data/KanaTable.kt`), N5 기초 단어 42개 JSON 작성(`assets/vocab_seed.json`). `ContentSeeder`로 앱 최초 실행 시 Room에 초기 데이터 시딩(`NibenApplication` 신설). `QuizGenerator`로 DB 기반 무작위 OX 문제 생성(정답/오답 쌍을 다른 항목과 섞어 오답 보기도 만듦) 구현, `QuizNotifier`/`QuizActionReceiver`를 하드코딩 테스트 문제 대신 실제 콘텐츠와 연결하고 응답 시 `quiz_log`에 실제로 기록되도록 변경. `POST_NOTIFICATIONS` 권한을 앱 실행 시 자동 요청하도록 `MainActivity` 수정. `assembleDebug` 빌드 성공 확인. 남은 항목(잠금화면 실기기 검증)은 물리 기기 사용자 작업.
-- 2026-08-22: Phase 2 진행. `RecentItemsStore`(DataStore)로 최근 출제 항목 최대 15개를 기억해 `ContentDao.getRandomItemExcludingIds`로 반복 출제를 피하도록 `QuizGenerator`(OX)를 수정하고, 같은 카테고리 오답 보기를 뽑아 3/4지선다 문제를 만드는 `generateMultipleChoice` 추가. `work/QuizRefreshWorker` + `work/WorkScheduler`로 3시간마다 자동으로 새 퀴즈 알림을 올리도록 구현(OX 65% / 선택형 35% 확률, `NibenApplication.onCreate`에서 `KEEP` 정책으로 등록 — WorkManager 자체 재부팅 복원 메커니즘 확인). 3/4지선다는 알림을 탭하면 `MainActivity`가 `QuizScreen`(신규, `ui/QuizScreen.kt`)으로 진입해 풀도록 구현, 선택 즉시 정답/오답을 색으로 피드백하고 `quiz_log`에 기록. `assembleDebug` 빌드 성공 확인. 남은 항목(배터리 소모 확인)은 물리 기기에서 며칠 사용 후 확인해야 하는 사용자 작업.
-- 2026-08-24: Phase 3 진행. 당초 KANJIDIC2/JMdict/Tatoeba 대량 파싱 계획을 "수기 큐레이션(Phase 1 vocab_seed.json과 동일 방식)"으로 전환(사유는 위 Phase 3 섹션 참고 — JMdict 한국어 gloss 부재, KANJIDIC2 JLPT 급수 필드 폐지, 1인 개발 리소스 대비 파이프라인 과함). N5 한자 126자를 음독/훈독/한글 뜻과 함께 수기 작성(`assets/kanji_seed.json`), 여행·생활 회화 단어 109개를 기존 `vocab_seed.json`에 추가(총 151개), 공항/교통/숙소/식당/쇼핑/길찾기/긴급상황/인사/스몰토크를 아우르는 여행 회화 문장 151개를 신규 작성(`assets/sentence_seed.json`). `ContentSeeder`를 `loadCategoryFromAssets` 공통 함수로 리팩터링해 세 파일 모두 앱 최초 실행 시 Room에 시딩되도록 연결. 카테고리별 출제 비율 조정 기능은 `CategoryRatioStore`(DataStore, 카테고리별 가중치 0~100·기본 20)로 구현하고 `ContentDao`에 카테고리 한정 무작위 조회 쿼리(`getRandomItemInCategory`/`getRandomItemInCategoryExcludingIds`)를 추가, `QuizGenerator.pickItem`이 가중치로 카테고리를 먼저 고른 뒤 항목을 뽑도록 수정(OX·선택형 퀴즈 양쪽 다 반영, 기존 "최근 출제 제외" 로직과 함께 동작). `ui/CategoryRatioScreen.kt`(카테고리별 ±5 스텝퍼 + 기본값 초기화 버튼)를 추가하고 MainActivity에 진입 버튼 연결. `assembleDebug` 빌드 성공 확인.
+- 2026-08-24: Phase 3 진행. 여행 회화 단어/문장 및 N5 한자 수기 번들링 방식 전환 완료. 카테고리별 가중치 조절 DataStore와 UI Screen(CategoryRatioScreen) 연동 및 QuizGenerator 반영 완료.
+- 2026-09-01: Phase 4 진행. `LevelFilterStore`(Preferences DataStore)로 1~5레벨 난이도 온/오프 상태 관리를 신설하고, `ContentDao`에 `LEFT JOIN` 쿼리를 추가해 퀴즈 로그 통계와 결합된 DTO(`ItemWithLogStatus`)를 조회하도록 확장. `QuizGenerator.pickItem`에 룰렛 휠 선택 알고리즘을 도입하고, 미학습 우선(+15), 최근 오답 즉시 복습(+30), 오답 후 2분~24시간 사이 복습 가중(+20), 24시간 이내 정답 가중치 감쇠(2.0), 누적 오답 횟수 가중(+5.0 * 횟수)을 조합한 간격 반복(SRS) 및 오답 집중 학습 로직 구현. UI에서는 JLPT 난이도 다중 선택 화면(`LevelFilterScreen.kt`)과 자주 틀린 단어를 모아보고 "외웠음" 버튼으로 오답 이력을 초기화할 수 있는 오답노트 화면(`IncorrectNoteScreen.kt`)을 추가하고, `MainActivity`에 해당 화면들로의 네비게이션 버튼을 연동함.
