@@ -189,8 +189,8 @@
 - [x] 간격 반복(SRS) 알고리즘 도입 → 출제 우선순위에 반영 — `QuizGenerator.pickItem`에 최근 풀이 여부, 오답 경과 시각(2분~24시간), 정답 경과 시각(24시간 이내 감쇠)을 연동한 룰렛 휠 가중 출제 로직 적용 완료
 
 ## Phase 5 — 학습 강화 / 편의 기능
-- [ ] 뜻 입력형 주관식 퀴즈 (앱 내)
-- [ ] 예문 완성형 퀴즈
+- [x] 뜻 입력형 주관식 퀴즈 (앱 내) — `QuizGenerator.generateMeaningInput` 및 `MeaningValidator`(복수 뜻/괄호/공백 정규화 지원), `ui/MeaningInputQuizScreen.kt` 구현 및 `MainActivity` 연동 완료
+- [x] 예문 완성형 퀴즈 — 문장 내 핵심 어휘를 빈칸 `( ___ )`으로 추출하고 오답 보기를 구성하는 `QuizGenerator.generateSentenceCompletion` 및 `ui/SentenceCompletionQuizScreen.kt` 구현, `MainActivity` 연동 완료
 - [ ] TTS 발음 재생
 - [ ] 학습 통계 (누적 문제 수, 연속 학습일, 카테고리별 정답률)
 - [ ] 사용자 단어 직접 추가/수정/삭제
@@ -214,3 +214,4 @@
 - 2026-08-21: Phase 1 진행. 히라가나/가타카나 전체 104쌍(청음+탁음+반탁음+요음) 하드코딩(`data/KanaTable.kt`), N5 기초 단어 42개 JSON 작성(`assets/vocab_seed.json`). `ContentSeeder`로 앱 최초 실행 시 Room에 초기 데이터 시딩(`NibenApplication` 신설). `QuizGenerator`로 DB 기반 무작위 OX 문제 생성(정답/오답 쌍을 다른 항목과 섞어 오답 보기도 만듦) 구현, `QuizNotifier`/`QuizActionReceiver`를 하드코딩 테스트 문제 대신 실제 콘텐츠와 연결하고 응답 시 `quiz_log`에 실제로 기록되도록 변경. `POST_NOTIFICATIONS` 권한을 앱 실행 시 자동 요청하도록 `MainActivity` 수정. `assembleDebug` 빌드 성공 확인. 남은 항목(잠금화면 실기기 검증)은 물리 기기 사용자 작업.
 - 2026-08-24: Phase 3 진행. 여행 회화 단어/문장 및 N5 한자 수기 번들링 방식 전환 완료. 카테고리별 가중치 조절 DataStore와 UI Screen(CategoryRatioScreen) 연동 및 QuizGenerator 반영 완료.
 - 2026-09-01: Phase 4 진행. `LevelFilterStore`(Preferences DataStore)로 1~5레벨 난이도 온/오프 상태 관리를 신설하고, `ContentDao`에 `LEFT JOIN` 쿼리를 추가해 퀴즈 로그 통계와 결합된 DTO(`ItemWithLogStatus`)를 조회하도록 확장. `QuizGenerator.pickItem`에 룰렛 휠 선택 알고리즘을 도입하고, 미학습 우선(+15), 최근 오답 즉시 복습(+30), 오답 후 2분~24시간 사이 복습 가중(+20), 24시간 이내 정답 가중치 감쇠(2.0), 누적 오답 횟수 가중(+5.0 * 횟수)을 조합한 간격 반복(SRS) 및 오답 집중 학습 로직 구현. UI에서는 JLPT 난이도 다중 선택 화면(`LevelFilterScreen.kt`)과 자주 틀린 단어를 모아보고 "외웠음" 버튼으로 오답 이력을 초기화할 수 있는 오답노트 화면(`IncorrectNoteScreen.kt`)을 추가하고, `MainActivity`에 해당 화면들로의 네비게이션 버튼을 연동함.
+- 2026-09-01: Phase 5 (1차) 진행. 주관식 뜻 입력 퀴즈(`MeaningInputQuizScreen.kt`)와 예문 완성형 퀴즈(`SentenceCompletionQuizScreen.kt`) 구현 완료. 다중 의미/괄호/공백 정규화 채점 엔진(`MeaningValidator`) 및 문장 내 어휘 매칭 빈칸 추출 알고리즘(`generateSentenceCompletion`) 개발, 단위 테스트 및 `assembleDebug` 검증 통과.

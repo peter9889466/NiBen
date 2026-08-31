@@ -31,11 +31,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import com.niben.app.notification.QuizNotifier
 import com.niben.app.ui.CategoryRatioScreen
 import com.niben.app.ui.IncorrectNoteScreen
 import com.niben.app.ui.LevelFilterScreen
+import com.niben.app.ui.MeaningInputQuizScreen
 import com.niben.app.ui.QuizScreen
+import com.niben.app.ui.SentenceCompletionQuizScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -43,6 +47,8 @@ class MainActivity : ComponentActivity() {
     private var showCategoryRatioScreen by mutableStateOf(false)
     private var showLevelFilterScreen by mutableStateOf(false)
     private var showIncorrectNoteScreen by mutableStateOf(false)
+    private var showMeaningInputScreen by mutableStateOf(false)
+    private var showSentenceCompletionScreen by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +60,10 @@ class MainActivity : ComponentActivity() {
                     when {
                         choiceCount != null ->
                             QuizScreen(choiceCount = choiceCount, onExit = { openQuizChoiceCount = null })
+                        showMeaningInputScreen ->
+                            MeaningInputQuizScreen(onExit = { showMeaningInputScreen = false })
+                        showSentenceCompletionScreen ->
+                            SentenceCompletionQuizScreen(onExit = { showSentenceCompletionScreen = false })
                         showCategoryRatioScreen ->
                             CategoryRatioScreen(onExit = { showCategoryRatioScreen = false })
                         showLevelFilterScreen ->
@@ -63,6 +73,8 @@ class MainActivity : ComponentActivity() {
                         else ->
                             HelloNiBen(
                                 onOpenMultipleChoiceQuiz = { openQuizChoiceCount = 4 },
+                                onOpenMeaningInputQuiz = { showMeaningInputScreen = true },
+                                onOpenSentenceCompletionQuiz = { showSentenceCompletionScreen = true },
                                 onOpenCategoryRatio = { showCategoryRatioScreen = true },
                                 onOpenLevelFilter = { showLevelFilterScreen = true },
                                 onOpenIncorrectNote = { showIncorrectNoteScreen = true }
@@ -88,12 +100,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HelloNiBen(
     onOpenMultipleChoiceQuiz: () -> Unit = {},
+    onOpenMeaningInputQuiz: () -> Unit = {},
+    onOpenSentenceCompletionQuiz: () -> Unit = {},
     onOpenCategoryRatio: () -> Unit = {},
     onOpenLevelFilter: () -> Unit = {},
     onOpenIncorrectNote: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -109,39 +124,69 @@ fun HelloNiBen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(vertical = 32.dp, horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "こんにちは", fontSize = 36.sp)
         Text(text = "NiBen — 오늘의 일본어 퀴즈", fontSize = 16.sp)
+
         Button(
             onClick = { scope.launch { QuizNotifier.showNextQuiz(context) } },
-            modifier = Modifier.padding(top = 24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
         ) {
             Text("OX 문제 알림 보내기")
         }
         Button(
             onClick = onOpenMultipleChoiceQuiz,
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
         ) {
             Text("선택형 퀴즈 화면 열기")
         }
         Button(
+            onClick = onOpenMeaningInputQuiz,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+        ) {
+            Text("뜻 입력형 주관식 퀴즈")
+        }
+        Button(
+            onClick = onOpenSentenceCompletionQuiz,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+        ) {
+            Text("예문 완성형 퀴즈")
+        }
+        Button(
             onClick = onOpenCategoryRatio,
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
         ) {
             Text("카테고리 비율 설정")
         }
         Button(
             onClick = onOpenLevelFilter,
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
         ) {
             Text("학습 난이도 설정")
         }
         Button(
             onClick = onOpenIncorrectNote,
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
         ) {
             Text("오답노트 복습")
         }

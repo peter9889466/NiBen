@@ -75,5 +75,13 @@ interface ContentDao {
           AND (c.level IS NULL OR c.level IN (:levels))
     """)
     suspend fun getItemsWithLogStatus(category: ContentCategory, levels: List<Int>): List<ItemWithLogStatus>
+
+    /** 예문 완성형 퀴즈 보기를 위한 단어/한자 목록 조회 */
+    @Query("SELECT * FROM content_item WHERE category IN ('VOCAB', 'KANJI')")
+    suspend fun getVocabAndKanjiItems(): List<ContentItem>
+
+    /** 예문이 별도로 입력된 단어 항목 목록 조회 */
+    @Query("SELECT * FROM content_item WHERE exampleSentence IS NOT NULL AND exampleSentence != ''")
+    suspend fun getItemsWithExampleSentence(): List<ContentItem>
 }
 

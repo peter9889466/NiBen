@@ -25,6 +25,108 @@ data class MultipleChoiceQuiz(
     val correctIndex: Int
 )
 
+data class MeaningInputQuiz(
+    val itemId: Long,
+    val category: ContentCategory,
+    val questionText: String,
+    val japaneseText: String,
+    val reading: String,
+    val meaningKo: String,
+    val acceptedAnswers: List<String>
+)
+
+data class SentenceCompletionQuiz(
+    val itemId: Long,
+    val category: ContentCategory,
+    val koreanMeaning: String,
+    val sentenceWithBlank: String,
+    val correctAnswer: String,
+    val options: List<String>,
+    val correctIndex: Int,
+    val fullSentence: String,
+    val fullReading: String
+)
+
+object MeaningValidator {
+    /**
+     * 사용자가 입력한 답변이 정답 목록이나 meaningKo에 부합하는지 검증한다.
+     */
+    fun isCorrect(
+        userInput: String,
+        meaningKo: String,
+        reading: String = "",
+        category: ContentCategory? = null
+    ): Boolean {
+        val normalizedInput = normalize(userInput)
+        if (normalizedInput.isEmpty()) return false
+
+        // 1. 전체 meaningKo 정규화 비교
+        if (normalizedInput == normalize(meaningKo)) return true
+
+        // 2. 가나 카테고리인 경우 로마자 또는 발음(reading) 직접 매칭
+        if (category == ContentCategory.HIRAGANA || category == ContentCategory.KATAKANA) {
+            if (normalizedInput.equals(normalize(reading), ignoreCase = true)) return true
+            if (normalizedInput.equals(normalize(meaningKo), ignoreCase = true)) return true
+        }
+
+        // 3. 쉼표(,), 슬래시(/), 세미콜론(;), 가운데점(·) 등으로 분리된 각각의 단어 후보 검사
+        val candidates = extractAnswerCandidates(meaningKo)
+        for (candidate in candidates) {
+            val normCandidate = normalize(candidate)
+            if (normCandidate.isNotEmpty() && normCandidate == normalizedInput) {
+                return true
+            }
+            // 괄호 제거 후 재비교 (예: "화장실은 어디예요?(정중한 표현)" -> "화장실은 어디예요?")
+            val withoutParentheses = normalize(removeParentheses(candidate))
+            if (withoutParentheses.isNotEmpty() && withoutParentheses == normalizedInput) {
+                return true
+            }
+        }
+
+        // 4. 입력값에서 괄호를 없앤 것과 후보들 비교
+        val inputNoParen = normalize(removeParentheses(userInput))
+        for (candidate in candidates) {
+            val normCandidate = normalize(removeParentheses(candidate))
+            if (normCandidate.isNotEmpty() && normCandidate == inputNoParen) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    fun extractAnswerCandidates(meaningKo: String): List<String> {
+        val delimiters = charArrayOf(',', '/', ';', '·', '、', '\n')
+        val list = meaningKo.split(*delimiters).map { it.trim() }.filter { it.isNotEmpty() }.toMutableList()
+        val noParen = removeParentheses(meaningKo).trim()
+        if (noParen.isNotEmpty() && !list.contains(noParen)) {
+            list.add(noParen)
+            val subNoParen = noParen.split(*delimiters).map { it.trim() }.filter { it.isNotEmpty() }
+            for (sub in subNoParen) {
+                if (!list.contains(sub)) list.add(sub)
+            }
+        }
+        return list.distinct()
+    }
+
+    fun normalize(text: String): String {
+        return text.trim()
+            .replace(Regex("""\s*,\s*"""), ", ")
+            .replace(Regex("""\s*/\s*"""), " / ")
+            .replace(Regex("""\s*;\s*"""), "; ")
+            .replace(Regex("""\s+"""), " ")
+            .replace(Regex("""[.~!?]+$"""), "") // 문장 끝 부호 제거
+            .lowercase()
+    }
+
+    fun removeParentheses(text: String): String {
+        return text.replace(Regex("""\([^)]*\)"""), "")
+            .replace(Regex("""\[[^]]*\]"""), "")
+            .replace(Regex("""<[^>]*>"""), "")
+            .trim()
+    }
+}
+
 object QuizGenerator {
     /**
      * excludeIds에 담긴 항목(최근 출제분)은 제외하고 무작위 OX 문제를 만든다.
@@ -76,6 +178,136 @@ object QuizGenerator {
             options = options,
             correctIndex = correctIndex
         )
+    }
+
+    /**
+     * 사용자가 직접 뜻을 입력하는 주관식 퀴즈를 생성한다.
+     */
+    suspend fun generateMeaningInput(
+        dao: ContentDao,
+        excludeIds: List<Long> = emptyList(),
+        context: Context? = null
+    ): MeaningInputQuiz? {
+        val item = pickItem(dao, excludeIds, context) ?: return null
+        val question = when (item.category) {
+            ContentCategory.HIRAGANA, ContentCategory.KATAKANA ->
+                "「${item.japaneseText}」의 발음(로마자)을 입력하세요"
+            else ->
+                "「${item.japaneseText}」의 뜻을 입력하세요"
+        }
+        val accepted = MeaningValidator.extractAnswerCandidates(item.meaningKo)
+        return MeaningInputQuiz(
+            itemId = item.id,
+            category = item.category,
+            questionText = question,
+            japaneseText = item.japaneseText,
+            reading = item.reading,
+            meaningKo = item.meaningKo,
+            acceptedAnswers = accepted
+        )
+    }
+
+    /**
+     * 문장에서 핵심 단어를 빈칸 ( ___ )으로 가리고, 4지선다로 알맞은 단어를 맞추는 예문 완성형 퀴즈를 생성한다.
+     */
+    suspend fun generateSentenceCompletion(
+        dao: ContentDao,
+        excludeIds: List<Long> = emptyList(),
+        context: Context? = null
+    ): SentenceCompletionQuiz? {
+        // 1. SENTENCE 카테고리 아이템 또는 exampleSentence가 있는 아이템 선별
+        val sentenceItems = dao.getByCategory(ContentCategory.SENTENCE)
+        val exampleItems = dao.getItemsWithExampleSentence()
+        val vocabItems = dao.getVocabAndKanjiItems()
+
+        if (sentenceItems.isEmpty() && exampleItems.isEmpty()) return null
+
+        // 최근 출제된 문장 제외 우선 필터링
+        val availableSentences = (sentenceItems + exampleItems)
+            .filter { it.id !in excludeIds }
+            .ifEmpty { sentenceItems + exampleItems }
+
+        val shuffledCandidates = availableSentences.shuffled()
+
+        // 2. 단어와 매칭하여 빈칸을 만들 수 있는 문장 찾기
+        for (item in shuffledCandidates) {
+            val sentenceText = if (item.category == ContentCategory.SENTENCE) {
+                item.japaneseText
+            } else {
+                item.exampleSentence ?: item.japaneseText
+            }
+
+            val koreanMeaning = item.meaningKo
+            val reading = item.reading
+
+            // 해당 문장에 포함된 VOCAB/KANJI 단어 탐색 (길이가 긴 단어 우선)
+            val matchedWords = vocabItems
+                .filter { vocab ->
+                    vocab.japaneseText.length >= 2 &&
+                            sentenceText.contains(vocab.japaneseText) &&
+                            sentenceText != vocab.japaneseText // 문장 전체가 단어 1개인 경우 제외
+                }
+                .sortedByDescending { it.japaneseText.length }
+
+            val targetWord: String
+            if (matchedWords.isNotEmpty()) {
+                targetWord = matchedWords.random().japaneseText
+            } else {
+                // 단어장에 직접 매칭되지 않는 경우, 문장의 핵심 어절 추출 (한자 구문 또는 2~4글자)
+                val kanjiChunks = Regex("""[\p{IsHan}]{1,4}""").findAll(sentenceText).map { it.value }.toList()
+                if (kanjiChunks.isNotEmpty()) {
+                    targetWord = kanjiChunks.random()
+                } else {
+                    // 한자가 없는 문장의 경우 2~4글자 가나 어절
+                    val words = sentenceText.replace(Regex("""[。、！？\s]"""), " ")
+                        .split(" ")
+                        .filter { it.length in 2..5 }
+                    if (words.isEmpty()) continue
+                    targetWord = words.random()
+                }
+            }
+
+            // 빈칸 생성 (첫 번째 일치 부분 치환)
+            val sentenceWithBlank = sentenceText.replaceFirst(targetWord, "( ___ )")
+            if (sentenceWithBlank == sentenceText) continue
+
+            // 3. 보기 4개 생성 (정답 1개 + 오답 3개)
+            val distractors = vocabItems
+                .map { it.japaneseText }
+                .filter { it != targetWord && it.length in (targetWord.length - 1)..(targetWord.length + 2) }
+                .distinct()
+                .shuffled()
+                .take(3)
+                .toMutableList()
+
+            // 보기가 3개 미만이면 전체 vocab에서 채움
+            if (distractors.size < 3) {
+                val more = vocabItems.map { it.japaneseText }
+                    .filter { it != targetWord && it !in distractors }
+                    .shuffled()
+                    .take(3 - distractors.size)
+                distractors.addAll(more)
+            }
+
+            if (distractors.size < 3) continue
+
+            val options = (distractors + targetWord).shuffled()
+            val correctIndex = options.indexOf(targetWord)
+
+            return SentenceCompletionQuiz(
+                itemId = item.id,
+                category = item.category,
+                koreanMeaning = koreanMeaning,
+                sentenceWithBlank = sentenceWithBlank,
+                correctAnswer = targetWord,
+                options = options,
+                correctIndex = correctIndex,
+                fullSentence = sentenceText,
+                fullReading = reading
+            )
+        }
+
+        return null
     }
 
     /**
