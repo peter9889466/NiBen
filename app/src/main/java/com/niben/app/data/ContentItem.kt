@@ -17,5 +17,8 @@ data class ContentItem(
     val meaningKo: String,
     val level: Int? = null,
     val exampleSentence: String? = null,
-    val source: String
+    val source: String,
+    val isFavorite: Boolean = false,
+    val isCustom: Boolean = false
 )
+

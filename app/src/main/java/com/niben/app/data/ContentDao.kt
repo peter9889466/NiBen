@@ -1,14 +1,56 @@
 package com.niben.app.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface ContentDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(items: List<ContentItem>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(item: ContentItem): Long
+
+    @Update
+    suspend fun update(item: ContentItem)
+
+    @Delete
+    suspend fun delete(item: ContentItem)
+
+    @Query("DELETE FROM content_item WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
+    @Query("UPDATE content_item SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun updateFavorite(id: Long, isFavorite: Boolean)
+
+    @Query("SELECT * FROM content_item WHERE isFavorite = 1 ORDER BY id DESC")
+    suspend fun getFavorites(): List<ContentItem>
+
+    @Query("SELECT * FROM content_item WHERE isFavorite = 1 AND category = :category ORDER BY id DESC")
+    suspend fun getFavoritesByCategory(category: ContentCategory): List<ContentItem>
+
+    @Query("SELECT COUNT(*) FROM content_item WHERE isFavorite = 1")
+    suspend fun getFavoriteCount(): Int
+
+    @Query("SELECT * FROM content_item WHERE isCustom = 1 ORDER BY id DESC")
+    suspend fun getCustomItems(): List<ContentItem>
+
+    @Query("""
+        SELECT * FROM content_item 
+        WHERE (japaneseText LIKE '%' || :query || '%' 
+           OR reading LIKE '%' || :query || '%' 
+           OR meaningKo LIKE '%' || :query || '%')
+        ORDER BY id DESC
+    """)
+    suspend fun searchItems(query: String): List<ContentItem>
+
+    @Query("SELECT * FROM content_item WHERE isFavorite = 1 ORDER BY RANDOM() LIMIT 1")
+    suspend fun getRandomFavoriteItem(): ContentItem?
+
 
     @Query("SELECT * FROM content_item WHERE id = :id")
     suspend fun getById(id: Long): ContentItem?

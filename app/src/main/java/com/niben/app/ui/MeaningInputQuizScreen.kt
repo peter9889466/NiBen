@@ -44,6 +44,10 @@ import com.niben.app.quiz.MeaningValidator
 import com.niben.app.quiz.QuizGenerator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.IconButton
+import com.niben.app.util.rememberTtsManager
+
 @Composable
 fun MeaningInputQuizScreen(onExit: () -> Unit) {
     val context = LocalContext.current
@@ -51,11 +55,13 @@ fun MeaningInputQuizScreen(onExit: () -> Unit) {
     val scope = rememberCoroutineScope()
     val dao = remember { NibenDatabase.getInstance(context).contentDao() }
     val quizLogDao = remember { NibenDatabase.getInstance(context).quizLogDao() }
+    val ttsManager = rememberTtsManager()
 
     var quiz by remember { mutableStateOf<MeaningInputQuiz?>(null) }
     var userInput by remember { mutableStateOf("") }
     var isAnswered by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
+    var isFavorite by remember { mutableStateOf(false) }
     var reloadKey by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
 
@@ -68,6 +74,8 @@ fun MeaningInputQuizScreen(onExit: () -> Unit) {
         val next = QuizGenerator.generateMeaningInput(dao, excludeIds, context)
         if (next != null) {
             RecentItemsStore.recordShown(context, next.itemId)
+            val item = dao.getById(next.itemId)
+            isFavorite = item?.isFavorite ?: false
         }
         quiz = next
         loading = false
@@ -111,17 +119,40 @@ fun MeaningInputQuizScreen(onExit: () -> Unit) {
             else -> {
                 val currentQuiz = quiz!!
 
-                Text(
-                    text = "주관식 뜻 입력 퀴즈",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { ttsManager.speak(currentQuiz.japaneseText) }) {
+                        Text("🔊", fontSize = 22.sp)
+                    }
+
+                    Text(
+                        text = "주관식 뜻 입력 퀴즈",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    IconButton(onClick = {
+                        val newFav = !isFavorite
+                        isFavorite = newFav
+                        scope.launch { dao.updateFavorite(currentQuiz.itemId, newFav) }
+                    }) {
+                        Text(
+                            text = if (isFavorite) "★" else "☆",
+                            fontSize = 24.sp,
+                            color = if (isFavorite) Color(0xFFFFB300) else Color.Gray
+                        )
+                    }
+                }
 
                 Text(
                     text = currentQuiz.questionText,
-                    fontSize = 22.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -136,6 +167,7 @@ fun MeaningInputQuizScreen(onExit: () -> Unit) {
                 } else {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
+
 
                 OutlinedTextField(
                     value = userInput,

@@ -39,15 +39,21 @@ import com.niben.app.quiz.QuizGenerator
 import com.niben.app.quiz.SentenceCompletionQuiz
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.IconButton
+import com.niben.app.util.rememberTtsManager
+
 @Composable
 fun SentenceCompletionQuizScreen(onExit: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val dao = remember { NibenDatabase.getInstance(context).contentDao() }
     val quizLogDao = remember { NibenDatabase.getInstance(context).quizLogDao() }
+    val ttsManager = rememberTtsManager()
 
     var quiz by remember { mutableStateOf<SentenceCompletionQuiz?>(null) }
     var selectedIndex by remember { mutableIntStateOf(-1) }
+    var isFavorite by remember { mutableStateOf(false) }
     var reloadKey by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
 
@@ -58,6 +64,8 @@ fun SentenceCompletionQuizScreen(onExit: () -> Unit) {
         val next = QuizGenerator.generateSentenceCompletion(dao, excludeIds, context)
         if (next != null) {
             RecentItemsStore.recordShown(context, next.itemId)
+            val item = dao.getById(next.itemId)
+            isFavorite = item?.isFavorite ?: false
         }
         quiz = next
         loading = false
@@ -76,13 +84,37 @@ fun SentenceCompletionQuizScreen(onExit: () -> Unit) {
             else -> {
                 val currentQuiz = quiz!!
 
-                Text(
-                    text = "예문 완성형 퀴즈",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { ttsManager.speak(currentQuiz.fullSentence) }) {
+                        Text("🔊", fontSize = 22.sp)
+                    }
+
+                    Text(
+                        text = "예문 완성형 퀴즈",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    IconButton(onClick = {
+                        val newFav = !isFavorite
+                        isFavorite = newFav
+                        scope.launch { dao.updateFavorite(currentQuiz.itemId, newFav) }
+                    }) {
+                        Text(
+                            text = if (isFavorite) "★" else "☆",
+                            fontSize = 24.sp,
+                            color = if (isFavorite) Color(0xFFFFB300) else Color.Gray
+                        )
+                    }
+                }
+
 
                 Text(
                     text = "빈칸에 들어갈 알맞은 단어는?",

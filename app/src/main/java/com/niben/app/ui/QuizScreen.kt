@@ -34,6 +34,12 @@ import com.niben.app.quiz.MultipleChoiceQuiz
 import com.niben.app.quiz.QuizGenerator
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.IconButton
+import com.niben.app.util.rememberTtsManager
+
 /**
  * 알림 탭으로 진입하는 3/4지선다 앱 내 퀴즈 화면.
  * 선택 즉시 정답 여부를 색상으로 피드백하고, quiz_log에 기록한다.
@@ -44,9 +50,11 @@ fun QuizScreen(choiceCount: Int, onExit: () -> Unit) {
     val scope = rememberCoroutineScope()
     val dao = remember { NibenDatabase.getInstance(context).contentDao() }
     val quizLogDao = remember { NibenDatabase.getInstance(context).quizLogDao() }
+    val ttsManager = rememberTtsManager()
 
     var quiz by remember { mutableStateOf<MultipleChoiceQuiz?>(null) }
     var selectedIndex by remember { mutableIntStateOf(-1) }
+    var isFavorite by remember { mutableStateOf(false) }
     var reloadKey by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
 
@@ -57,6 +65,8 @@ fun QuizScreen(choiceCount: Int, onExit: () -> Unit) {
         val next = QuizGenerator.generateMultipleChoice(dao, choiceCount, excludeIds, context)
         if (next != null) {
             RecentItemsStore.recordShown(context, next.itemId)
+            val item = dao.getById(next.itemId)
+            isFavorite = item?.isFavorite ?: false
         }
         quiz = next
         loading = false
@@ -74,9 +84,34 @@ fun QuizScreen(choiceCount: Int, onExit: () -> Unit) {
             quiz == null -> Text("출제할 문제가 부족해요. 콘텐츠를 더 추가해 주세요.")
             else -> {
                 val currentQuiz = quiz!!
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { ttsManager.speak(currentQuiz.questionText) }) {
+                        Text("🔊", fontSize = 22.sp)
+                    }
+
+                    IconButton(onClick = {
+                        val newFav = !isFavorite
+                        isFavorite = newFav
+                        scope.launch { dao.updateFavorite(currentQuiz.itemId, newFav) }
+                    }) {
+                        Text(
+                            text = if (isFavorite) "★" else "☆",
+                            fontSize = 24.sp,
+                            color = if (isFavorite) Color(0xFFFFB300) else Color.Gray
+                        )
+                    }
+                }
+
                 Text(
                     text = currentQuiz.questionText,
-                    fontSize = 24.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -129,6 +164,7 @@ fun QuizScreen(choiceCount: Int, onExit: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 private fun QuizOptionRow(

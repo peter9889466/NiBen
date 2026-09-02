@@ -4,6 +4,18 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 
+data class CategoryStatDto(
+    val category: ContentCategory,
+    val totalCount: Int,
+    val correctCount: Int
+)
+
+data class QuizTypeStatDto(
+    val quizType: QuizType,
+    val totalCount: Int,
+    val correctCount: Int
+)
+
 @Dao
 interface QuizLogDao {
     @Insert
@@ -14,6 +26,39 @@ interface QuizLogDao {
 
     @Query("SELECT * FROM quiz_log ORDER BY answeredAt DESC")
     suspend fun getAll(): List<QuizLog>
+
+    @Query("SELECT COUNT(*) FROM quiz_log")
+    suspend fun getTotalSolvedCount(): Int
+
+    @Query("SELECT COUNT(*) FROM quiz_log WHERE isCorrect = 1")
+    suspend fun getTotalCorrectCount(): Int
+
+    @Query("SELECT COUNT(*) FROM quiz_log WHERE answeredAt >= :startOfDayMillis")
+    suspend fun getTodaySolvedCount(startOfDayMillis: Long): Int
+
+    @Query("SELECT answeredAt FROM quiz_log ORDER BY answeredAt ASC")
+    suspend fun getAllAnsweredTimestamps(): List<Long>
+
+    @Query("""
+        SELECT 
+            c.category as category,
+            COUNT(q.id) as totalCount,
+            SUM(CASE WHEN q.isCorrect = 1 THEN 1 ELSE 0 END) as correctCount
+        FROM quiz_log q
+        INNER JOIN content_item c ON q.itemId = c.id
+        GROUP BY c.category
+    """)
+    suspend fun getCategoryStats(): List<CategoryStatDto>
+
+    @Query("""
+        SELECT 
+            quizType as quizType,
+            COUNT(id) as totalCount,
+            SUM(CASE WHEN isCorrect = 1 THEN 1 ELSE 0 END) as correctCount
+        FROM quiz_log
+        GROUP BY quizType
+    """)
+    suspend fun getQuizTypeStats(): List<QuizTypeStatDto>
 
     /** 오답노트용: 오답 횟수가 1회 이상인 항목을 오답 횟수 내림차순, 오답률 내림차순으로 가져온다. */
     @Query("""
@@ -38,4 +83,5 @@ interface QuizLogDao {
     @Query("DELETE FROM quiz_log WHERE itemId = :itemId")
     suspend fun deleteLogsByItemId(itemId: Long)
 }
+
 

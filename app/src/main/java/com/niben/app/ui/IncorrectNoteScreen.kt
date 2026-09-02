@@ -35,6 +35,11 @@ import com.niben.app.data.IncorrectItem
 import com.niben.app.data.NibenDatabase
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.IconButton
+import com.niben.app.util.rememberTtsManager
+
 private val CATEGORY_LABEL = mapOf(
     ContentCategory.HIRAGANA to "히라가나",
     ContentCategory.KATAKANA to "가타카나",
@@ -48,7 +53,9 @@ private val CATEGORY_LABEL = mapOf(
 fun IncorrectNoteScreen(onExit: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val dao = remember { NibenDatabase.getInstance(context).contentDao() }
     val quizLogDao = remember { NibenDatabase.getInstance(context).quizLogDao() }
+    val ttsManager = rememberTtsManager()
     val incorrectItems = remember { mutableStateListOf<IncorrectItem>() }
 
     // 데이터 로드
@@ -56,6 +63,7 @@ fun IncorrectNoteScreen(onExit: () -> Unit) {
         incorrectItems.clear()
         incorrectItems.addAll(quizLogDao.getIncorrectItems())
     }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -122,12 +130,19 @@ fun IncorrectNoteScreen(onExit: () -> Unit) {
                                         onClick = { },
                                         label = { Text(CATEGORY_LABEL[item.category].orEmpty()) }
                                     )
-                                    Text(
-                                        text = "오답 ${item.incorrectCount}회 / 시도 ${item.totalCount}회",
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontWeight = FontWeight.Medium
-                                    )
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        IconButton(onClick = { ttsManager.speak(item.japaneseText) }) {
+                                            Text("🔊", fontSize = 18.sp)
+                                        }
+
+                                        Text(
+                                            text = "오답 ${item.incorrectCount}회 / 시도 ${item.totalCount}회",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.error,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
 
                                 Text(
@@ -157,8 +172,19 @@ fun IncorrectNoteScreen(onExit: () -> Unit) {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(top = 12.dp),
-                                    horizontalArrangement = Arrangement.End
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    IconButton(onClick = {
+                                        scope.launch {
+                                            val current = dao.getById(item.id)
+                                            val newFav = !(current?.isFavorite ?: false)
+                                            dao.updateFavorite(item.id, newFav)
+                                        }
+                                    }) {
+                                        Text("⭐", fontSize = 18.sp)
+                                    }
+
                                     OutlinedButton(
                                         onClick = {
                                             scope.launch {
@@ -173,6 +199,7 @@ fun IncorrectNoteScreen(onExit: () -> Unit) {
                                         Text("외웠음")
                                     }
                                 }
+
                             }
                         }
                     }
