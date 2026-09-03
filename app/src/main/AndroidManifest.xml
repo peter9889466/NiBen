@@ -24,6 +24,18 @@
         <receiver
             android:name=".notification.QuizActionReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name=".widget.NibenAppWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.niben.app.widget.ACTION_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/niben_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

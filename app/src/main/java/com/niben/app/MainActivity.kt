@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.niben.app.notification.QuizNotifier
+import com.niben.app.ui.BackupRestoreScreen
 import com.niben.app.ui.CategoryRatioScreen
 import com.niben.app.ui.CustomWordScreen
 import com.niben.app.ui.FavoriteScreen
@@ -65,6 +66,7 @@ class MainActivity : ComponentActivity() {
     private var showStatisticsScreen by mutableStateOf(false)
     private var showCategoryRatioScreen by mutableStateOf(false)
     private var showLevelFilterScreen by mutableStateOf(false)
+    private var showBackupRestoreScreen by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +94,8 @@ class MainActivity : ComponentActivity() {
                             CategoryRatioScreen(onExit = { showCategoryRatioScreen = false })
                         showLevelFilterScreen ->
                             LevelFilterScreen(onExit = { showLevelFilterScreen = false })
+                        showBackupRestoreScreen ->
+                            BackupRestoreScreen(onExit = { showBackupRestoreScreen = false })
                         else ->
                             HelloNiBen(
                                 onOpenMultipleChoiceQuiz = { openQuizChoiceCount = 4 },
@@ -102,7 +106,8 @@ class MainActivity : ComponentActivity() {
                                 onOpenIncorrectNote = { showIncorrectNoteScreen = true },
                                 onOpenStatistics = { showStatisticsScreen = true },
                                 onOpenCategoryRatio = { showCategoryRatioScreen = true },
-                                onOpenLevelFilter = { showLevelFilterScreen = true }
+                                onOpenLevelFilter = { showLevelFilterScreen = true },
+                                onOpenBackupRestore = { showBackupRestoreScreen = true }
                             )
                     }
                 }
@@ -132,7 +137,8 @@ fun HelloNiBen(
     onOpenIncorrectNote: () -> Unit = {},
     onOpenStatistics: () -> Unit = {},
     onOpenCategoryRatio: () -> Unit = {},
-    onOpenLevelFilter: () -> Unit = {}
+    onOpenLevelFilter: () -> Unit = {},
+    onOpenBackupRestore: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -288,6 +294,15 @@ fun HelloNiBen(
                 ) {
                     Text("난이도 설정")
                 }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = onOpenBackupRestore,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("💾 데이터 백업 및 복원")
             }
         }
 

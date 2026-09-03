@@ -21,6 +21,9 @@ interface QuizLogDao {
     @Insert
     suspend fun insert(log: QuizLog)
 
+    @Insert(onConflict = androidx.room.OnConflictStrategy.IGNORE)
+    suspend fun insertAll(logs: List<QuizLog>)
+
     @Query("SELECT * FROM quiz_log WHERE itemId = :itemId ORDER BY answeredAt DESC")
     suspend fun getByItem(itemId: Long): List<QuizLog>
 

@@ -53,7 +53,8 @@ private val CATEGORY_LABEL = mapOf(
 
 private val QUIZ_TYPE_LABEL = mapOf(
     QuizType.OX to "OX 퀴즈 (알림/앱)",
-    QuizType.MULTIPLE_CHOICE to "선택형 퀴즈 (3/4지선다)",
+    QuizType.THREE_CHOICE to "3지선다 객관식",
+    QuizType.FOUR_CHOICE to "4지선다 객관식",
     QuizType.MEANING_INPUT to "주관식 뜻 입력",
     QuizType.SENTENCE_COMPLETION to "예문 완성형"
 )
